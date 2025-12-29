@@ -281,19 +281,21 @@ function Spiem:AddTab(options)
 
     function tab:Select()
         for _, t in pairs(Hub.Tabs) do
-            if t.Page.Parent.Visible then
-                Tween(t.Page.Parent, {0.15, Enum.EasingStyle.Quint}, {GroupTransparency = 1})
-                task.delay(0.15, function() t.Page.Parent.Visible = false end)
+            local otherCG = t.Page.Parent
+            if otherCG.Visible and otherCG ~= Page.Parent then
+                Tween(otherCG, {0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 1, Position = UDim2.new(0, -15, 0, 0)})
+                task.delay(0.15, function() otherCG.Visible = false end)
             end
             Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
-            Tween(t.Button:FindFirstChild("Frame"), {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
+            local ind = t.Button:FindFirstChild("Frame")
+            if ind then Tween(ind, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
         end
         
         local myCG = Page.Parent
         myCG.Visible = true
         myCG.GroupTransparency = 1
-        myCG.Position = UDim2.new(0, 10, 0, 0)
-        Tween(myCG, {0.25, Enum.EasingStyle.Quint}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
+        myCG.Position = UDim2.new(0, 15, 0, 0) -- Slide in from right
+        Tween(myCG, {0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
         
         Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
