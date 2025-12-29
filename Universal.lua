@@ -62,12 +62,7 @@ local Tabs = {
     Settings = Window:AddTab("Settings")
 }
 
--- Notify on Load
-Spiem:Notify({
-    Title = "Spiem Universal",
-    Content = "Script loaded successfully!\nLeft CTRL to toggle menu.",
-    Duration = 5
-})
+-- Script loaded silently, config notifications only
 
 -- ============================================
 -- PLAYER TAB
@@ -512,5 +507,3 @@ Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Wait(); CreateESP(p) en
 
 -- Load autoload config if exists
 SaveManager:LoadAutoloadConfig()
-
-Spiem:Notify({Title = "Ready!", Content = "All features active. Have fun!", Duration = 3})
