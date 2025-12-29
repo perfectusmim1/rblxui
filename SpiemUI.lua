@@ -147,6 +147,8 @@ function Spiem.new(options)
     self.PageContainer = Instance.new("Frame", self.MainFrame)
     self.PageContainer.BackgroundTransparency, self.PageContainer.Position, self.PageContainer.Size = 1, UDim2.new(0, 190, 0, 60), UDim2.new(1, -205, 1, -75)
     self.PageContainer.ClipsDescendants = true
+    self.Tabs = {}
+    self.CurrentTab = nil
 
     self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.LeftControl
 
@@ -280,11 +282,15 @@ function Spiem:AddTab(options)
     PageTitle.LayoutOrder = -1 
 
     function tab:Select()
+        if Hub.CurrentTab == tab then return end
+        Hub.CurrentTab = tab
+
         for _, t in pairs(Hub.Tabs) do
             local otherCG = t.Page.Parent
             if otherCG.Visible and otherCG ~= Page.Parent then
-                Tween(otherCG, {0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 1, Position = UDim2.new(0, -15, 0, 0)})
-                task.delay(0.15, function() otherCG.Visible = false end)
+                -- Fast hide old tab
+                Tween(otherCG, {0.1, Enum.EasingStyle.Linear}, {GroupTransparency = 1})
+                task.delay(0.1, function() otherCG.Visible = false end)
             end
             Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
@@ -294,8 +300,8 @@ function Spiem:AddTab(options)
         local myCG = Page.Parent
         myCG.Visible = true
         myCG.GroupTransparency = 1
-        myCG.Position = UDim2.new(0, 15, 0, 0) -- Slide in from right
-        Tween(myCG, {0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
+        myCG.Position = UDim2.new(0, 0, 0, 8) -- Subtle rise from bottom
+        Tween(myCG, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
         
         Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
