@@ -1,8 +1,8 @@
 --[[
-    SpiemUI Library
+    SpiemUI Library V1.1
     A premium, fluent Roblox UI library.
     
-    Developed for: perfectusmim1/rblxui
+    Fixed: Variable Scoping and Nil Errors
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -12,6 +12,8 @@ local RunService = game:GetService("RunService")
 
 local Spiem = {}
 Spiem.__index = Spiem
+
+print("SpiemUI V1.1 Loading...")
 
 -- Utility Functions
 local function Tween(object, info, properties)
@@ -25,12 +27,6 @@ local function MakeDraggable(topbarobject, object)
 	local DragInput = nil
 	local DragStart = nil
 	local StartPos = nil
-
-	local function Update(input)
-		local Delta = input.Position - DragStart
-		local Pos = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
-		object.Position = Pos
-	end
 
 	topbarobject.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -62,6 +58,8 @@ end
 
 function Spiem.new(title)
     local self = setmetatable({}, Spiem)
+    
+    self.Tabs = {}
     
     -- Main Gui
     self.ScreenGui = Instance.new("ScreenGui")
@@ -143,9 +141,6 @@ function Spiem.new(title)
     self.PageContainer.Size = UDim2.new(1, -170, 1, -60)
     self.PageContainer.Parent = self.MainFrame
 
-    self.Tabs = {}
-    self.ActiveTab = nil
-
     -- Handle Toggle
     UserInputService.InputBegan:Connect(function(input, gpe)
         if gpe then return end
@@ -161,7 +156,8 @@ function Spiem:Destroy()
     self.ScreenGui:Destroy()
 end
 
-function Spiem:CreateTab(name, icon)
+function Spiem:CreateTab(name)
+    local Hub = self
     local tab = {}
     tab.Name = name
     
@@ -175,7 +171,7 @@ function Spiem:CreateTab(name, icon)
     TabButton.Text = name
     TabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
     TabButton.TextSize = 14
-    TabButton.Parent = self.TabList
+    TabButton.Parent = Hub.TabList
 
     local TabButtonCorner = Instance.new("UICorner")
     TabButtonCorner.CornerRadius = UDim.new(0, 6)
@@ -189,7 +185,7 @@ function Spiem:CreateTab(name, icon)
     Page.ScrollBarThickness = 2
     Page.ScrollBarImageColor3 = Color3.fromRGB(50, 50, 50)
     Page.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Page.Parent = self.PageContainer
+    Page.Parent = Hub.PageContainer
 
     local PageLayout = Instance.new("UIListLayout")
     PageLayout.Padding = UDim.new(0, 8)
@@ -207,7 +203,6 @@ function Spiem:CreateTab(name, icon)
         Page.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 10)
     end)
 
-    local Hub = self
     function tab:Select()
         for _, t in pairs(Hub.Tabs) do
             t.Page.Visible = false
@@ -221,11 +216,12 @@ function Spiem:CreateTab(name, icon)
         tab:Select()
     end)
 
-    if #self.Tabs == 0 then
+    local tabData = {Button = TabButton, Page = Page}
+    table.insert(Hub.Tabs, tabData)
+
+    if #Hub.Tabs == 1 then
         tab:Select()
     end
-
-    table.insert(self.Tabs, {Button = TabButton, Page = Page})
 
     -- Elements
     function tab:CreateButton(text, callback)
