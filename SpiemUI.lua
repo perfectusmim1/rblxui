@@ -291,7 +291,6 @@ function Spiem:AddTab(options)
     function tab:AddToggle(idx, options)
         local t, d, c = options.Title, options.Default, options.Callback
         local en = d or false
-        Spiem.Options[idx] = {Value = en}
         
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
@@ -310,8 +309,10 @@ function Spiem:AddTab(options)
         inr.BackgroundColor3, inr.Position, inr.Size = Color3.fromRGB(150, 150, 150), UDim2.new(0, 3, 0.5, -8), UDim2.new(0, 16, 0, 16)
         Instance.new("UICorner", inr).CornerRadius = UDim.new(1, 0)
 
+        local toggleFuncs = {Type = "Toggle", Value = en}
+        
         local function upd()
-            Spiem.Options[idx].Value = en
+            toggleFuncs.Value = en
             Tween(ot, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = en and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40)})
             Tween(inr, {0.3, Enum.EasingStyle.Quint}, {Position = en and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8), BackgroundColor3 = en and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)})
             if c then c(en) end
@@ -319,16 +320,16 @@ function Spiem:AddTab(options)
         b.MouseButton1Click:Connect(function() en = not en; upd() end)
         upd()
         
-        local toggleFuncs = {}
         function toggleFuncs:OnChanged(callback) c = callback end
         function toggleFuncs:SetValue(v) en = v; upd() end
+        
+        Spiem.Options[idx] = toggleFuncs
         return toggleFuncs
     end
 
     function tab:AddSlider(idx, options)
         local t, d, min, max, rounding, c = options.Title, options.Default, options.Min or 0, options.Max or 100, options.Rounding or 1, options.Callback
         local val = d or min
-        Spiem.Options[idx] = {Value = val}
 
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 50)
@@ -354,10 +355,12 @@ function Spiem:AddTab(options)
         interact.BackgroundTransparency, interact.Size, interact.Text = 1, UDim2.new(1, 20, 1, 20), ""
         interact.Position = UDim2.new(0, -10, 0, -10)
 
+        local sliderFuncs = {Type = "Slider", Value = val}
+
         local function upd(input)
             local pos = math.clamp((input.Position.X - slideBar.AbsolutePosition.X) / slideBar.AbsoluteSize.X, 0, 1)
             val = math.floor((min + (max - min) * pos) * (1/rounding) + 0.5) / (1/rounding)
-            Spiem.Options[idx].Value = val
+            sliderFuncs.Value = val
             v_l.Text = tostring(val)
             Tween(fill, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new((val-min)/(max-min), 0, 1, 0)})
             if c then c(val) end
@@ -381,9 +384,16 @@ function Spiem:AddTab(options)
             end
         end)
 
-        local sliderFuncs = {}
         function sliderFuncs:OnChanged(callback) c = callback end
-        function sliderFuncs:SetValue(v) val = v; v_l.Text = t; Tween(fill, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new((val-min)/(max-min), 0, 1, 0)}); if c then c(val) end end
+        function sliderFuncs:SetValue(v)
+            val = v
+            sliderFuncs.Value = val
+            v_l.Text = tostring(val)
+            Tween(fill, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new((val-min)/(max-min), 0, 1, 0)})
+            if c then c(val) end
+        end
+        
+        Spiem.Options[idx] = sliderFuncs
         return sliderFuncs
     end
 
@@ -439,9 +449,11 @@ function Spiem:AddTab(options)
         pll.Padding, pll.SortOrder = UDim.new(0, 2), Enum.SortOrder.LayoutOrder
 
         local op = false
+        local dropFuncs = {Type = multi and "MultiDropdown" or "Dropdown", Value = sel}
+
         local function upd_l()
             dropBtn.Text = "  " .. getSelText()
-            Spiem.Options[idx].Value = sel
+            dropFuncs.Value = sel
         end
 
         local function closePopup()
@@ -526,19 +538,23 @@ function Spiem:AddTab(options)
             end
         end)
 
-        local dropFuncs = {Type = "Dropdown", Value = sel}
         function dropFuncs:OnChanged(callback) c = callback end
         function dropFuncs:SetValue(v)
-            if type(v) == "table" and not multi then
-                -- Refresh dropdown values list
-                values = v
-                sel = v[1] or sel
-            elseif type(v) == "table" and multi then
-                sel = v
+            if multi then
+                if type(v) == "table" then
+                    sel = v
+                end
             else
-                sel = v
+                if type(v) == "table" then
+                    -- If it's a table but NOT multi, assume it's a list refresh
+                    values = v
+                    sel = v[1] or sel
+                else
+                    sel = v
+                end
             end
             upd_l()
+            if c then c(sel) end
         end
         function dropFuncs:Refresh(newValues)
             values = newValues
@@ -553,7 +569,6 @@ function Spiem:AddTab(options)
 
     function tab:AddInput(idx, options)
         local t, d, ph, numeric, finished, c = options.Title, options.Default, options.Placeholder, options.Numeric, options.Finished, options.Callback
-        Spiem.Options[idx] = {Value = d or ""}
 
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
@@ -574,25 +589,32 @@ function Spiem:AddTab(options)
         box.PlaceholderText, box.Text, box.TextColor3, box.PlaceholderColor3, box.TextSize = ph or "...", d or "", Color3.fromRGB(255, 255, 255), Color3.fromRGB(100, 100, 100), 13
         box.TextXAlignment, box.ClearTextOnFocus = Enum.TextXAlignment.Left, false
 
+        local inputFuncs = {Type = "Input", Value = d or ""}
+
         box.Focused:Connect(function() Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(0, 120, 255)}) end)
         box.FocusLost:Connect(function()
             Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(50, 50, 50)})
             local val = box.Text
             if numeric then val = val:gsub("%D+", "") box.Text = val end
-            Spiem.Options[idx].Value = val
+            inputFuncs.Value = val
             if c then c(val) end
         end)
         
-        local inputFuncs = {}
         function inputFuncs:OnChanged(callback) c = callback end
+        function inputFuncs:SetValue(v)
+            box.Text = v
+            inputFuncs.Value = v
+            if c then c(v) end
+        end
+        
+        Spiem.Options[idx] = inputFuncs
         return inputFuncs
     end
 
     function tab:AddColorpicker(idx, options)
         local t, d, c = options.Title, options.Default or Color3.fromRGB(255, 255, 255), options.Callback
         local clr = d
-        Spiem.Options[idx] = {Value = clr}
-
+        
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
@@ -606,26 +628,39 @@ function Spiem:AddTab(options)
         Instance.new("UICorner", cp_b).CornerRadius = UDim.new(0, 4)
         cp_b.Text = ""
 
+        local cpFuncs = {Type = "Colorpicker", Value = clr}
+
         cp_b.MouseButton1Click:Connect(function()
             -- Simplified color picker logic: Cycle red, green, blue for demo
             if clr == Color3.fromRGB(255,0,0) then clr = Color3.fromRGB(0,255,0)
             elseif clr == Color3.fromRGB(0,255,0) then clr = Color3.fromRGB(0,0,255)
             else clr = Color3.fromRGB(255,0,0) end
             cp_b.BackgroundColor3 = clr
-            Spiem.Options[idx].Value = clr
+            cpFuncs.Value = clr
             if c then c(clr) end
         end)
 
-        local cpFuncs = {}
         function cpFuncs:OnChanged(callback) c = callback end
-        function cpFuncs:SetValueRGB(v) clr = v; cp_b.BackgroundColor3 = clr; if c then c(clr) end end
+        function cpFuncs:SetValueRGB(v)
+            clr = v
+            cp_b.BackgroundColor3 = clr
+            cpFuncs.Value = clr
+            if c then c(clr) end
+        end
+        function cpFuncs:SetValue(v) -- For SaveManager
+            if type(v) == "table" and v.r then -- Handle serialized color
+                v = Color3.new(v.r, v.g, v.b)
+            end
+            self:SetValueRGB(v)
+        end
+
+        Spiem.Options[idx] = cpFuncs
         return cpFuncs
     end
 
     function tab:AddKeybind(idx, options)
         local t, d, mode, c = options.Title, options.Default or "None", options.Mode or "Toggle", options.Callback
         local key = d
-        Spiem.Options[idx] = {Value = key}
 
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
@@ -640,6 +675,8 @@ function Spiem:AddTab(options)
         Instance.new("UICorner", kb_b).CornerRadius = UDim.new(0, 6)
         kb_b.Font, kb_b.Text, kb_b.TextColor3, kb_b.TextSize = Enum.Font.BuilderSans, key, Color3.fromRGB(200, 200, 200), 12
 
+        local kbFuncs = {Type = "Keybind", Value = key}
+
         local listening = false
         kb_b.MouseButton1Click:Connect(function()
             listening = true
@@ -652,16 +689,23 @@ function Spiem:AddTab(options)
                     key = input.KeyCode.Name
                     kb_b.Text = key
                     listening = false
-                    Spiem.Options[idx].Value = key
-                    if c then c(key) end -- Trigger callback on assignment
+                    kbFuncs.Value = key
+                    if c then c(key, true) end -- true means it's a CHANGE
                 end
             elseif not gpe and input.KeyCode.Name == key then
-                -- No need for a secondary callback trigger here if we want it to behave like a setting
+                if c then c(key, false) end -- false means it's a PRESS
             end
         end)
 
-        local kbFuncs = {}
         function kbFuncs:OnChanged(callback) c = callback end
+        function kbFuncs:SetValue(v)
+            key = v
+            kb_b.Text = key
+            kbFuncs.Value = key
+            if c then c(key) end
+        end
+        
+        Spiem.Options[idx] = kbFuncs
         return kbFuncs
     end
 
@@ -712,12 +756,23 @@ SaveManager.Parser = {
         Save = function(idx, object) return { type = "Dropdown", idx = idx, value = object.Value } end,
         Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
     },
+    MultiDropdown = {
+        Save = function(idx, object) return { type = "MultiDropdown", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
     Input = {
         Save = function(idx, object) return { type = "Input", idx = idx, value = object.Value } end,
         Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
     },
     Keybind = {
         Save = function(idx, object) return { type = "Keybind", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+    Colorpicker = {
+        Save = function(idx, object) 
+            local c = object.Value
+            return { type = "Colorpicker", idx = idx, value = {r = c.R, g = c.G, b = c.B} } 
+        end,
         Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
     },
 }
@@ -863,6 +918,24 @@ function SaveManager:BuildConfigSection(tab)
                 self.Library:Notify({Title = "Success", Content = "Overwrote config: " .. name, Duration = 3})
             else
                 self.Library:Notify({Title = "Error", Content = err, Duration = 3})
+            end
+        end
+    })
+
+    tab:AddButton({
+        Title = "Delete config",
+        Callback = function()
+            local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
+            if not name then
+                return self.Library:Notify({Title = "Error", Content = "No config selected", Duration = 3})
+            end
+            local filePath = self.Folder .. "/settings/" .. name .. ".json"
+            if isfile(filePath) then
+                delfile(filePath)
+                self.Library:Notify({Title = "Success", Content = "Deleted config: " .. name, Duration = 3})
+                configList:Refresh(self:RefreshConfigList())
+            else
+                self.Library:Notify({Title = "Error", Content = "Config file not found", Duration = 3})
             end
         end
     })
