@@ -64,13 +64,13 @@ function Spiem:Notify(options)
     local duration = options.Duration or 5
 
     local frame = Instance.new("Frame", NotifContainer)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     frame.Size = UDim2.new(1, 0, 0, 0)
     frame.Position = UDim2.new(0, 0, 0, 0)
     frame.ClipsDescendants = true
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
     local s = Instance.new("UIStroke", frame)
-    s.Color, s.Transparency = Color3.fromRGB(50, 50, 50), 0.5
+    s.Color, s.Transparency = Color3.fromRGB(70, 70, 70), 0.5
 
     local t = Instance.new("TextLabel", frame)
     t.BackgroundTransparency, t.Position, t.Size, t.Font = 1, UDim2.new(0, 15, 0, 8), UDim2.new(1, -30, 0, 18), Enum.Font.BuilderSansBold
@@ -111,15 +111,15 @@ function Spiem.new(options)
     local title = type(options) == "table" and options.Title or options or "Spiem UI"
 
     self.MainFrame = Instance.new("Frame")
-    self.MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    self.MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     self.MainFrame.Position = UDim2.new(0.5, -290, 0.5, -230)
     self.MainFrame.Size = UDim2.new(0, 580, 0, 460)
     self.MainFrame.ClipsDescendants = true
     self.MainFrame.Parent = self.ScreenGui
 
-    Instance.new("UICorner", self.MainFrame).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", self.MainFrame).CornerRadius = UDim.new(0, 10)
     local MS = Instance.new("UIStroke", self.MainFrame)
-    MS.Color, MS.Thickness = Color3.fromRGB(40, 40, 40), 1
+    MS.Color, MS.Thickness = Color3.fromRGB(60, 60, 60), 1
 
     self.Topbar = Instance.new("Frame", self.MainFrame)
     self.Topbar.Name, self.Topbar.BackgroundTransparency, self.Topbar.Size = "Topbar", 1, UDim2.new(1, 0, 0, 50)
@@ -131,8 +131,10 @@ function Spiem.new(options)
     MakeDraggable(self.Topbar, self.MainFrame)
 
     self.Sidebar = Instance.new("Frame", self.MainFrame)
-    self.Sidebar.BackgroundColor3, self.Sidebar.Position, self.Sidebar.Size = Color3.fromRGB(20, 20, 20), UDim2.new(0, 15, 0, 60), UDim2.new(0, 160, 1, -75)
-    Instance.new("UICorner", self.Sidebar).CornerRadius = UDim.new(0, 10)
+    self.Sidebar.BackgroundColor3, self.Sidebar.Position, self.Sidebar.Size = Color3.fromRGB(24, 24, 24), UDim2.new(0, 15, 0, 60), UDim2.new(0, 160, 1, -75)
+    Instance.new("UICorner", self.Sidebar).CornerRadius = UDim.new(0, 8)
+    local SS = Instance.new("UIStroke", self.Sidebar)
+    SS.Color, SS.Transparency = Color3.fromRGB(50, 50, 50), 0.5
 
     self.TabList = Instance.new("ScrollingFrame", self.Sidebar)
     self.TabList.BackgroundTransparency, self.TabList.Position, self.TabList.Size = 1, UDim2.new(0, 5, 0, 5), UDim2.new(1, -10, 1, -10)
@@ -222,25 +224,37 @@ function Spiem:AddTab(options)
     local name = type(options) == "table" and options.Title or options
     local Hub, tab = self, {Name = name}
     local BTN = Instance.new("TextButton", Hub.TabList)
-    BTN.BackgroundColor3, BTN.BackgroundTransparency, BTN.Size, BTN.AutoButtonColor = Color3.fromRGB(25, 25, 25), 1, UDim2.new(1, 0, 0, 35), false
+    BTN.BackgroundColor3, BTN.BackgroundTransparency, BTN.Size, BTN.AutoButtonColor = Color3.fromRGB(60, 60, 60), 1, UDim2.new(1, 0, 0, 34), false
     BTN.Font, BTN.Text, BTN.TextColor3, BTN.TextSize = Enum.Font.BuilderSansMedium, name, Color3.fromRGB(180, 180, 180), 14
-    Instance.new("UICorner", BTN).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", BTN).CornerRadius = UDim.new(0, 6)
+    
+    local Indicator = Instance.new("Frame", BTN)
+    Indicator.BackgroundColor3, Indicator.Position, Indicator.Size = Color3.fromRGB(0, 120, 255), UDim2.new(0, 2, 0.5, -8), UDim2.new(0, 3, 0, 16)
+    Indicator.BackgroundTransparency = 1
+    Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
 
     local Page = Instance.new("ScrollingFrame", Hub.PageContainer)
     Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 2
-    Page.ScrollBarImageColor3, Page.CanvasSize = Color3.fromRGB(50, 50, 50), UDim2.new(0, 0, 0, 0)
+    Page.ScrollBarImageColor3, Page.CanvasSize = Color3.fromRGB(80, 80, 80), UDim2.new(0, 0, 0, 0)
     local PL = Instance.new("UIListLayout", Page)
     PL.Padding, PL.SortOrder = UDim.new(0, 10), Enum.SortOrder.LayoutOrder
     Instance.new("UIPadding", Page).PaddingLeft, Instance.new("UIPadding", Page).PaddingTop = UDim.new(0, 2), UDim.new(0, 2)
     PL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() Page.CanvasSize = UDim2.new(0, 0, 0, PL.AbsoluteContentSize.Y + 10) end)
 
+    local PageTitle = Instance.new("TextLabel", Page)
+    PageTitle.BackgroundTransparency, PageTitle.Size, PageTitle.Font = 1, UDim2.new(1, 0, 0, 40), Enum.Font.BuilderSansBold
+    PageTitle.Text, PageTitle.TextColor3, PageTitle.TextSize, PageTitle.TextXAlignment = name, Color3.fromRGB(255, 255, 255), 24, Enum.TextXAlignment.Left
+    PageTitle.LayoutOrder = -1 
+
     function tab:Select()
         for _, t in pairs(Hub.Tabs) do
             t.Page.Visible = false
-            Tween(t.Button, {0.3, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            Tween(t.Button:FindFirstChild("Frame"), {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
         end
         Page.Visible = true
-        Tween(BTN, {0.3, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
     end
     BTN.MouseButton1Click:Connect(function() tab:Select() end)
     table.insert(Hub.Tabs, {Button = BTN, Page = Page})
@@ -249,8 +263,10 @@ function Spiem:AddTab(options)
     function tab:AddButton(options)
         local t, desc, c = options.Title, options.Description, options.Callback
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, desc and 55 or 40)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, desc and 55 or 40)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
         local b = Instance.new("TextButton", f)
         b.BackgroundTransparency, b.Size, b.Text = 1, UDim2.new(1, 0, 1, 0), ""
         
@@ -266,10 +282,16 @@ function Spiem:AddTab(options)
         end
 
         b.MouseButton1Click:Connect(function()
-            Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(35, 35, 35)})
+            Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
             task.wait(0.1)
-            Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)})
+            Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(38, 38, 38)})
             if c then c() end
+        end)
+        b.MouseEnter:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+        end)
+        b.MouseLeave:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
         end)
 
         local btnFuncs = {}
@@ -293,8 +315,11 @@ function Spiem:AddTab(options)
         local en = d or false
         
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
+        
         local b = Instance.new("TextButton", f)
         b.BackgroundTransparency, b.Size, b.Text = 1, UDim2.new(1, 0, 1, 0), ""
         
@@ -303,8 +328,11 @@ function Spiem:AddTab(options)
         l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
 
         local ot = Instance.new("Frame", f)
-        ot.BackgroundColor3, ot.Position, ot.Size = Color3.fromRGB(40, 40, 40), UDim2.new(1, -50, 0.5, -11), UDim2.new(0, 40, 0, 22)
+        ot.BackgroundColor3, ot.Position, ot.Size = Color3.fromRGB(50, 50, 50), UDim2.new(1, -50, 0.5, -11), UDim2.new(0, 40, 0, 22)
         Instance.new("UICorner", ot).CornerRadius = UDim.new(1, 0)
+        local ost = Instance.new("UIStroke", ot)
+        ost.Color, ost.Transparency = Color3.fromRGB(70, 70, 70), 0.5
+
         local inr = Instance.new("Frame", ot)
         inr.BackgroundColor3, inr.Position, inr.Size = Color3.fromRGB(150, 150, 150), UDim2.new(0, 3, 0.5, -8), UDim2.new(0, 16, 0, 16)
         Instance.new("UICorner", inr).CornerRadius = UDim.new(1, 0)
@@ -313,11 +341,18 @@ function Spiem:AddTab(options)
         
         local function upd()
             toggleFuncs.Value = en
-            Tween(ot, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = en and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40)})
+            Tween(ot, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = en and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(50, 50, 50)})
+            Tween(ost, {0.3, Enum.EasingStyle.Quint}, {Color = en and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(70, 70, 70)})
             Tween(inr, {0.3, Enum.EasingStyle.Quint}, {Position = en and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8), BackgroundColor3 = en and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)})
             if c then c(en) end
         end
         b.MouseButton1Click:Connect(function() en = not en; upd() end)
+        b.MouseEnter:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+        end)
+        b.MouseLeave:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
+        end)
         upd()
         
         function toggleFuncs:OnChanged(callback) c = callback end
@@ -332,8 +367,10 @@ function Spiem:AddTab(options)
         local val = d or min
 
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 50)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 50)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
 
         local l = Instance.new("TextLabel", f)
         l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 8), UDim2.new(0.5, -15, 0, 18), Enum.Font.BuilderSansMedium
@@ -344,8 +381,10 @@ function Spiem:AddTab(options)
         v_l.Text, v_l.TextColor3, v_l.TextSize, v_l.TextXAlignment = tostring(val), Color3.fromRGB(180, 180, 180), 13, Enum.TextXAlignment.Right
 
         local slideBar = Instance.new("Frame", f)
-        slideBar.BackgroundColor3, slideBar.Position, slideBar.Size = Color3.fromRGB(40, 40, 40), UDim2.new(0, 15, 0, 32), UDim2.new(1, -30, 0, 8)
+        slideBar.BackgroundColor3, slideBar.Position, slideBar.Size = Color3.fromRGB(50, 50, 50), UDim2.new(0, 15, 0, 32), UDim2.new(1, -30, 0, 8)
         Instance.new("UICorner", slideBar).CornerRadius = UDim.new(1, 0)
+        local sbs = Instance.new("UIStroke", slideBar)
+        sbs.Color, sbs.Transparency = Color3.fromRGB(70, 70, 70), 0.5
 
         local fill = Instance.new("Frame", slideBar)
         fill.BackgroundColor3, fill.Size = Color3.fromRGB(0, 120, 255), UDim2.new((val-min)/(max-min), 0, 1, 0)
@@ -384,6 +423,13 @@ function Spiem:AddTab(options)
             end
         end)
 
+        interact.MouseEnter:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+        end)
+        interact.MouseLeave:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
+        end)
+
         function sliderFuncs:OnChanged(callback) c = callback end
         function sliderFuncs:SetValue(v)
             val = v
@@ -400,11 +446,12 @@ function Spiem:AddTab(options)
     function tab:AddDropdown(idx, options)
         local t, d, values, multi, c = options.Title, options.Default, options.Values, options.Multi, options.Callback
         local sel = multi and (d or {}) or (d or values[1])
-        Spiem.Options[idx] = {Value = sel, Type = "Dropdown"}
 
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
 
         local l = Instance.new("TextLabel", f)
         l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(0.5, -15, 1, 0), Enum.Font.BuilderSansMedium
@@ -421,12 +468,14 @@ function Spiem:AddTab(options)
 
         -- Dropdown Button (right side)
         local dropBtn = Instance.new("TextButton", f)
-        dropBtn.BackgroundColor3, dropBtn.Position, dropBtn.Size = Color3.fromRGB(35, 35, 35), UDim2.new(0.5, 0, 0.5, -14), UDim2.new(0.5, -15, 0, 28)
+        dropBtn.BackgroundColor3, dropBtn.Position, dropBtn.Size = Color3.fromRGB(32, 32, 32), UDim2.new(0.5, 0, 0.5, -14), UDim2.new(0.5, -15, 0, 28)
         dropBtn.Font, dropBtn.TextColor3, dropBtn.TextSize, dropBtn.AutoButtonColor = Enum.Font.BuilderSans, Color3.fromRGB(200, 200, 200), 13, false
         dropBtn.TextTruncate = Enum.TextTruncate.AtEnd
         dropBtn.Text = "  " .. getSelText()
         dropBtn.TextXAlignment = Enum.TextXAlignment.Left
         Instance.new("UICorner", dropBtn).CornerRadius = UDim.new(0, 6)
+        local dbs = Instance.new("UIStroke", dropBtn)
+        dbs.Color, dbs.Transparency = Color3.fromRGB(60, 60, 60), 0.5
 
         local ic = Instance.new("ImageLabel", dropBtn)
         ic.BackgroundTransparency, ic.Position, ic.Size, ic.Image = 1, UDim2.new(1, -22, 0.5, -6), UDim2.new(0, 12, 0, 12), "rbxassetid://6034818372"
@@ -462,6 +511,13 @@ function Spiem:AddTab(options)
             task.delay(0.2, function() popup.Visible = false end)
             Tween(ic, {0.2, Enum.EasingStyle.Quint}, {Rotation = 0})
         end
+        
+        dropBtn.MouseEnter:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+        end)
+        dropBtn.MouseLeave:Connect(function()
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
+        end)
 
         local function openPopup()
             op = true
@@ -571,18 +627,20 @@ function Spiem:AddTab(options)
         local t, d, ph, numeric, finished, c = options.Title, options.Default, options.Placeholder, options.Numeric, options.Finished, options.Callback
 
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s_out = Instance.new("UIStroke", f)
+        s_out.Color, s_out.Transparency = Color3.fromRGB(65, 65, 65), 0.5
         
         local l = Instance.new("TextLabel", f)
         l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(0.4, 0, 1, 0), Enum.Font.BuilderSansMedium
         l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
 
         local bf = Instance.new("Frame", f)
-        bf.BackgroundColor3, bf.Position, bf.Size = Color3.fromRGB(20, 20, 20), UDim2.new(1, -165, 0.5, -14), UDim2.new(0, 150, 0, 28)
+        bf.BackgroundColor3, bf.Position, bf.Size = Color3.fromRGB(32, 32, 32), UDim2.new(1, -165, 0.5, -14), UDim2.new(0, 150, 0, 28)
         Instance.new("UICorner", bf).CornerRadius = UDim.new(0, 6)
         local s = Instance.new("UIStroke", bf)
-        s.Color = Color3.fromRGB(50, 50, 50)
+        s.Color = Color3.fromRGB(60, 60, 60)
         
         local box = Instance.new("TextBox", bf)
         box.BackgroundTransparency, box.Position, box.Size, box.Font = 1, UDim2.new(0, 8, 0, 0), UDim2.new(1, -16, 1, 0), Enum.Font.BuilderSans
@@ -593,11 +651,17 @@ function Spiem:AddTab(options)
 
         box.Focused:Connect(function() Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(0, 120, 255)}) end)
         box.FocusLost:Connect(function()
-            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(50, 50, 50)})
+            Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(60, 60, 60)})
             local val = box.Text
             if numeric then val = val:gsub("%D+", "") box.Text = val end
             inputFuncs.Value = val
             if c then c(val) end
+        end)
+        f.MouseEnter:Connect(function()
+            Tween(s_out, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+        end)
+        f.MouseLeave:Connect(function()
+            Tween(s_out, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
         end)
         
         function inputFuncs:OnChanged(callback) c = callback end
@@ -616,8 +680,10 @@ function Spiem:AddTab(options)
         local clr = d
         
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
         
         local l = Instance.new("TextLabel", f)
         l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(1, -60, 1, 0), Enum.Font.BuilderSansMedium
@@ -663,16 +729,20 @@ function Spiem:AddTab(options)
         local key = d
 
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
         
         local l = Instance.new("TextLabel", f)
         l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(1, -60, 1, 0), Enum.Font.BuilderSansMedium
         l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
 
         local kb_b = Instance.new("TextButton", f)
-        kb_b.BackgroundColor3, kb_b.Position, kb_b.Size = Color3.fromRGB(35, 35, 35), UDim2.new(1, -115, 0.5, -12), UDim2.new(0, 100, 0, 24)
+        kb_b.BackgroundColor3, kb_b.Position, kb_b.Size = Color3.fromRGB(32, 32, 32), UDim2.new(1, -115, 0.5, -12), UDim2.new(0, 100, 0, 24)
         Instance.new("UICorner", kb_b).CornerRadius = UDim.new(0, 6)
+        local kbs = Instance.new("UIStroke", kb_b)
+        kbs.Color, kbs.Transparency = Color3.fromRGB(60, 60, 60), 0.5
         kb_b.Font, kb_b.Text, kb_b.TextColor3, kb_b.TextSize = Enum.Font.BuilderSans, key, Color3.fromRGB(200, 200, 200), 12
 
         local kbFuncs = {Type = "Keybind", Value = key}
@@ -711,8 +781,10 @@ function Spiem:AddTab(options)
 
     function tab:AddParagraph(options)
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 60)
+        f.BackgroundColor3, f.Size = Color3.fromRGB(38, 38, 38), UDim2.new(1, 0, 0, 60)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+        local s = Instance.new("UIStroke", f)
+        s.Color, s.Transparency = Color3.fromRGB(65, 65, 65), 0.5
         local titleLabel = Instance.new("TextLabel", f)
         titleLabel.BackgroundTransparency, titleLabel.Position, titleLabel.Size, titleLabel.Font = 1, UDim2.new(0, 15, 0, 10), UDim2.new(1, -30, 0, 18), Enum.Font.BuilderSansBold
         titleLabel.Text, titleLabel.TextColor3, titleLabel.TextSize, titleLabel.TextXAlignment = options.Title or "Paragraph", Color3.fromRGB(240, 240, 240), 14, Enum.TextXAlignment.Left
