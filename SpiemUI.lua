@@ -134,7 +134,25 @@ function Spiem.new(options)
     self.PageContainer = Instance.new("Frame", self.MainFrame)
     self.PageContainer.BackgroundTransparency, self.PageContainer.Position, self.PageContainer.Size = 1, UDim2.new(0, 190, 0, 60), UDim2.new(1, -205, 1, -75)
 
-    self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.RightControl
+    self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.LeftControl
+
+    -- Topbar Buttons
+    local BtnContainer = Instance.new("Frame", self.Topbar)
+    BtnContainer.BackgroundTransparency, BtnContainer.Position, BtnContainer.Size = 1, UDim2.new(1, -75, 0, 0), UDim2.new(0, 70, 1, 0)
+    local BCL = Instance.new("UIListLayout", BtnContainer)
+    BCL.FillDirection, BCL.HorizontalAlignment, BCL.Padding, BCL.VerticalAlignment = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Right, UDim.new(0, 5), Enum.VerticalAlignment.Center
+
+    local function CreateTopbarBtn(text, color, callback)
+        local b = Instance.new("TextButton", BtnContainer)
+        b.BackgroundColor3, b.Size, b.Font, b.Text = color, UDim2.new(0, 24, 0, 24), Enum.Font.BuilderSansBold, text
+        b.TextColor3, b.TextSize = Color3.fromRGB(255, 255, 255), 14
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+        b.MouseButton1Click:Connect(callback)
+        return b
+    end
+
+    CreateTopbarBtn("-", Color3.fromRGB(40, 40, 40), function() self.MainFrame.Visible = false end)
+    CreateTopbarBtn("X", Color3.fromRGB(150, 0, 0), function() self:Destroy() end)
 
     UserInputService.InputBegan:Connect(function(i, g)
         if not g and i.KeyCode == self.MinimizeKey then self.MainFrame.Visible = not self.MainFrame.Visible end
@@ -515,9 +533,10 @@ function Spiem:AddTab(options)
                     kb_b.Text = key
                     listening = false
                     Spiem.Options[idx].Value = key
+                    if c then c(key) end -- Trigger callback on assignment
                 end
             elseif not gpe and input.KeyCode.Name == key then
-                if c then c(key) end
+                -- No need for a secondary callback trigger here if we want it to behave like a setting
             end
         end)
 

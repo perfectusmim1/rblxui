@@ -27,7 +27,7 @@ local Config = {
 -- Window Creation
 local Window = Spiem.new({
     Title = "Spiem Universal | " .. LP.Name,
-    MinimizeKey = Enum.KeyCode.RightControl
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
 local Tabs = {
@@ -73,8 +73,11 @@ do
             Config.Fly = v
             if not v then
                 if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
-                    LP.Character.HumanoidRootPart:FindFirstChildOfClass("BodyVelocity"):Destroy()
-                    LP.Character.HumanoidRootPart:FindFirstChildOfClass("BodyGyro"):Destroy()
+                    local hrp = LP.Character.HumanoidRootPart
+                    local bv = hrp:FindFirstChildOfClass("BodyVelocity")
+                    local bg = hrp:FindFirstChildOfClass("BodyGyro")
+                    if bv then bv:Destroy() end
+                    if bg then bg:Destroy() end
                 end
             end
         end
@@ -131,7 +134,7 @@ end
 do
     Tabs.Misc:AddKeybind("MenuToggle", {
         Title = "Menü Aç/Kapat Tuşu",
-        Default = "RightControl",
+        Default = "LeftControl",
         Callback = function(key)
             Window.MinimizeKey = Enum.KeyCode[key]
             Spiem:Notify({
