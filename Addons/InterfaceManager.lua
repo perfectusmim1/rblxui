@@ -3,7 +3,7 @@
     Tema ve arayüz yönetim sistemi
     
     Kullanım:
-    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/InterfaceManager.lua"))()
+    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/InterfaceManager.lua"))()
 ]]
 
 local HttpService = game:GetService("HttpService")

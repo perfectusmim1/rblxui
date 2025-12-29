@@ -3,14 +3,14 @@
     Bu dosya kütüphanenin tüm özelliklerini gösterir.
     
     GitHub'dan yüklemek için:
-    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/SpiemUI.lua"))()
-    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/SaveManager.lua"))()
-    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/InterfaceManager.lua"))()
+    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/SpiemUI.lua"))()
+    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/SaveManager.lua"))()
+    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/InterfaceManager.lua"))()
 ]]
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/SpiemUI.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/InterfaceManager.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/SpiemUI.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/InterfaceManager.lua"))()
 
 -- Pencere oluştur
 local Window = Library:CreateWindow({

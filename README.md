@@ -37,11 +37,11 @@ SpiemUI, Roblox için Fluent UI benzeri modern, animasyonlu ve özelleştirilebi
 
 ```lua
 -- Ana kütüphane
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/SpiemUI.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/SpiemUI.lua"))()
 
 -- Addon'lar (opsiyonel)
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/spiemui/main/Addons/InterfaceManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/InterfaceManager.lua"))()
 ```
 
 ## 📖 Temel Kullanım
@@ -149,7 +149,7 @@ Library:ToggleTransparency(true)
 ## 📁 Dosya Yapısı
 
 ```
-spiemui/
+rblxui/
 ├── SpiemUI.lua          # Ana kütüphane (tek dosya)
 ├── Example.lua          # Örnek kullanım scripti
 ├── README.md            # Dokümantasyon
