@@ -10,7 +10,7 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
 local Spiem = {
-    Version = "1.3.1",
+    Version = "1.5",
     Options = {}
 }
 Spiem.__index = Spiem
@@ -581,7 +581,7 @@ function Spiem:AddTab(options)
             for _, o in pairs(values) do
                 local isSel = multi and sel[o] or (sel == o)
                 local ob = Instance.new("TextButton", popupList)
-                ob.BackgroundColor3, ob.Size = isSel and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40), UDim2.new(1, 0, 0, 28)
+                ob.BackgroundColor3, ob.Size = isSel and Color3.fromRGB(0, 90, 190) or Color3.fromRGB(40, 40, 40), UDim2.new(1, 0, 0, 28)
                 ob.Font, ob.Text = Enum.Font.BuilderSans, "  " .. o
                 ob.TextColor3, ob.TextSize, ob.AutoButtonColor, ob.TextXAlignment = Color3.fromRGB(220, 220, 220), 13, false, Enum.TextXAlignment.Left
                 ob.ZIndex = 101
@@ -601,7 +601,7 @@ function Spiem:AddTab(options)
                 ob.MouseButton1Click:Connect(function()
                     if multi then
                         sel[o] = not sel[o]
-                        ob.BackgroundColor3 = sel[o] and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40)
+                        ob.BackgroundColor3 = sel[o] and Color3.fromRGB(0, 90, 190) or Color3.fromRGB(40, 40, 40)
                     else
                         sel = o
                         closePopup()
