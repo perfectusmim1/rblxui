@@ -1,52 +1,46 @@
--- Example usage for SpiemUI
--- This script demonstrates how to create a window, tabs, and all elements.
+-- SpiemUI V1.2 - Örnek Kullanım
+-- NOT: GitHub'a yükledikten sonra linki kendi raw linkinle değiştir.
 
--- Loading the library (Assuming it's uploaded to the repo)
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua"))()
+-- Kütüphaneyi Yükle (Cache Buster ile)
+local url = "https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua?v=" .. tick()
+local library = loadstring(game:HttpGet(url))()
 
--- Create Window
-local Window = library.new("Spiem Hub | V1.0")
+-- Pencere Oluştur
+local Window = library.new("Spiem Hub | V1.2")
 
--- Main Tab
-local MainTab = Window:CreateTab("Main Settings")
+-- Sekmeler
+local MainTab = Window:CreateTab("Ana Sayfa")
+local ScriptsTab = Window:CreateTab("Scriptler")
+local SettingsTab = Window:CreateTab("Ayarlar")
 
--- Elements in Main Tab
-MainTab:CreateLabel("General Information")
+-- Ana Sayfa Elementleri
+MainTab:CreateLabel("Hoş Geldiniz!")
+MainTab:CreateParagraph("Bilgilendirme", "Bu UI kütüphanesi akıcı animasyonlar ve modern bir tasarımla hazırlanmıştır. Sağ CTRL tuşu ile menüyü gizleyebilirsiniz.")
 
-MainTab:CreateParagraph("Welcome!", "This is a premium Roblox UI library designed by Spiem. Use RightControl to toggle visibility.")
-
-MainTab:CreateButton("Perform Action", function()
-    print("Button clicked!")
+MainTab:CreateButton("Discord Sunucusuna Katıl", function()
+    -- Setclipboard("discord.gg/spiem") -- Eğer executor destekliyorsa
+    print("Discord linki kopyalandı!")
 end)
 
-MainTab:CreateToggle("Enable Auto-Farm", false, function(state)
-    print("Auto-farm is now:", state)
+-- Scriptler Elementleri
+ScriptsTab:CreateButton("Inf Yield Çalıştır", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
--- Customization Tab
-local CustomTab = Window:CreateTab("Customization")
+-- Ayarlar Elementleri
+SettingsTab:CreateToggle("Hızlı Koşma", false, function(state)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = state and 50 or 16
+end)
 
-CustomTab:CreateInput("Walkspeed", "16", function(val)
-    local speed = tonumber(val)
-    if speed then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
-        print("Set speed to:", speed)
+SettingsTab:CreateInput("Jumppower Ayarla", "50", function(val)
+    local jp = tonumber(val)
+    if jp then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = jp
     end
 end)
 
-CustomTab:CreateDropdown("Select Theme", {"Dark Blue", "Midnight", "Amnesia"}, "Dark Blue", function(selected)
-    print("Theme selected:", selected)
+SettingsTab:CreateDropdown("Tema Seç", {"Koyu", "Mavi", "Gece"}, "Koyu", function(selected)
+    print("Tema seçildi: " .. selected)
 end)
 
-CustomTab:CreateMultiDropdown("Choose Features", {"Speed", "Jump", "Fly", "Spin"}, {"Speed"}, function(selected)
-    print("Selected features:", table.concat(selected, ", "))
-end)
-
--- Support Tab
-local SupportTab = Window:CreateTab("Support")
-SupportTab:CreateLabel("Discord: discord.gg/spiem")
-SupportTab:CreateButton("Destroy UI", function()
-    Window:Destroy()
-end)
-
-print("SpiemUI Loaded Successfully!")
+print("SpiemUI V1.2 Başarıyla Çalıştı!")
