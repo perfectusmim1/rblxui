@@ -10,7 +10,7 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
 local Spiem = {
-    Version = "1.3",
+    Version = "1.3.1",
     Options = {}
 }
 Spiem.__index = Spiem
@@ -39,6 +39,7 @@ local function MakeDraggable(topbarobject, object)
 	end)
 	UserInputService.InputChanged:Connect(function(input)
 		if input == DragInput and Dragging then
+			local Delta = input.Position - DragStart
 			object.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
 		end
 	end)
