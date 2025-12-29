@@ -39,8 +39,7 @@ local function MakeDraggable(topbarobject, object)
 	end)
 	UserInputService.InputChanged:Connect(function(input)
 		if input == DragInput and Dragging then
-			local Delta = input.Position - DragStart
-			object.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Ofsset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+			object.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
 		end
 	end)
 end
@@ -145,7 +144,7 @@ function Spiem:Destroy() self.ScreenGui:Destroy() end
 -- Dialog
 function Spiem:Dialog(options)
     local overlay = Instance.new("Frame", self.ScreenGui)
-    overlay.BackgroundColor3, overlay.BackgroundTransparency, overlay.Size = Color3.fromRGB(0,0,0), 0.5, UDim2.new(1,0,1,0)
+    overlay.BackgroundColor3, overlay.BackgroundTransparency, overlay.Size = Color3.fromRGB(0,0,0), 1, UDim2.new(1,0,1,0)
     overlay.ZIndex = 10
     
     local d = Instance.new("Frame", overlay)
@@ -289,12 +288,16 @@ function Spiem:AddTab(options)
         v_l.Text, v_l.TextColor3, v_l.TextSize, v_l.TextXAlignment = tostring(val), Color3.fromRGB(180, 180, 180), 13, Enum.TextXAlignment.Right
 
         local slideBar = Instance.new("Frame", f)
-        slideBar.BackgroundColor3, slideBar.Position, slideBar.Size = Color3.fromRGB(40, 40, 40), UDim2.new(0, 15, 0, 32), UDim2.new(1, -30, 0, 6)
+        slideBar.BackgroundColor3, slideBar.Position, slideBar.Size = Color3.fromRGB(40, 40, 40), UDim2.new(0, 15, 0, 32), UDim2.new(1, -30, 0, 8)
         Instance.new("UICorner", slideBar).CornerRadius = UDim.new(1, 0)
 
         local fill = Instance.new("Frame", slideBar)
         fill.BackgroundColor3, fill.Size = Color3.fromRGB(0, 120, 255), UDim2.new((val-min)/(max-min), 0, 1, 0)
         Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+        local interact = Instance.new("TextButton", slideBar)
+        interact.BackgroundTransparency, interact.Size, interact.Text = 1, UDim2.new(1, 20, 1, 20), ""
+        interact.Position = UDim2.new(0, -10, 0, -10)
 
         local function upd(input)
             local pos = math.clamp((input.Position.X - slideBar.AbsolutePosition.X) / slideBar.AbsoluteSize.X, 0, 1)
@@ -306,7 +309,7 @@ function Spiem:AddTab(options)
         end
 
         local dragging = false
-        slideBar.InputBegan:Connect(function(input)
+        interact.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 dragging = true
                 upd(input)
