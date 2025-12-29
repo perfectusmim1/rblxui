@@ -2,7 +2,7 @@
 -- This script demonstrates how to create a window, tabs, and all elements.
 
 -- Loading the library (Assuming it's uploaded to the repo)
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/SpiemUI.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua"))()
 
 -- Create Window
 local Window = library.new("Spiem Hub | V1.0")

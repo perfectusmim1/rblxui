@@ -207,8 +207,9 @@ function Spiem:CreateTab(name, icon)
         Page.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 10)
     end)
 
+    local Hub = self
     function tab:Select()
-        for _, t in pairs(self.Tabs) do
+        for _, t in pairs(Hub.Tabs) do
             t.Page.Visible = false
             Tween(t.Button, {0.3, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
         end
