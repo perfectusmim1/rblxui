@@ -138,21 +138,30 @@ function Spiem.new(options)
 
     -- Topbar Buttons
     local BtnContainer = Instance.new("Frame", self.Topbar)
-    BtnContainer.BackgroundTransparency, BtnContainer.Position, BtnContainer.Size = 1, UDim2.new(1, -75, 0, 0), UDim2.new(0, 70, 1, 0)
+    BtnContainer.BackgroundTransparency, BtnContainer.Position, BtnContainer.Size = 1, UDim2.new(1, -70, 0.5, -12), UDim2.new(0, 60, 0, 24)
     local BCL = Instance.new("UIListLayout", BtnContainer)
-    BCL.FillDirection, BCL.HorizontalAlignment, BCL.Padding, BCL.VerticalAlignment = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Right, UDim.new(0, 5), Enum.VerticalAlignment.Center
+    BCL.FillDirection, BCL.HorizontalAlignment, BCL.Padding = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Right, UDim.new(0, 8)
 
-    local function CreateTopbarBtn(text, color, callback)
+    local function CreateTopbarBtn(icon, hoverColor, callback)
         local b = Instance.new("TextButton", BtnContainer)
-        b.BackgroundColor3, b.Size, b.Font, b.Text = color, UDim2.new(0, 24, 0, 24), Enum.Font.BuilderSansBold, text
-        b.TextColor3, b.TextSize = Color3.fromRGB(255, 255, 255), 14
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+        b.BackgroundTransparency, b.Size, b.Text = 1, UDim2.new(0, 24, 0, 24), ""
+        
+        local ic = Instance.new("ImageLabel", b)
+        ic.BackgroundTransparency, ic.Size, ic.Position, ic.Image = 1, UDim2.new(0, 16, 0, 16), UDim2.new(0.5, -8, 0.5, -8), icon
+        ic.ImageColor3 = Color3.fromRGB(140, 140, 140)
+        
+        b.MouseEnter:Connect(function()
+            Tween(ic, {0.15, Enum.EasingStyle.Quint}, {ImageColor3 = hoverColor})
+        end)
+        b.MouseLeave:Connect(function()
+            Tween(ic, {0.15, Enum.EasingStyle.Quint}, {ImageColor3 = Color3.fromRGB(140, 140, 140)})
+        end)
         b.MouseButton1Click:Connect(callback)
         return b
     end
 
-    CreateTopbarBtn("-", Color3.fromRGB(40, 40, 40), function() self.MainFrame.Visible = false end)
-    CreateTopbarBtn("X", Color3.fromRGB(150, 0, 0), function() self:Destroy() end)
+    CreateTopbarBtn("rbxassetid://7072706663", Color3.fromRGB(200, 200, 200), function() self.MainFrame.Visible = false end) -- Minimize
+    CreateTopbarBtn("rbxassetid://7072725342", Color3.fromRGB(255, 80, 80), function() self:Destroy() end) -- Close
 
     UserInputService.InputBegan:Connect(function(i, g)
         if not g and i.KeyCode == self.MinimizeKey then self.MainFrame.Visible = not self.MainFrame.Visible end
