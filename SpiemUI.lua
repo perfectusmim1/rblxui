@@ -255,6 +255,7 @@ function Spiem:AddTab(options)
     CG.BackgroundTransparency, CG.Size, CG.Visible = 1, UDim2.new(1, 0, 1, 0), false
     Page.Parent = CG
     Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.Visible = true -- FIX: Internal page must be visible
 
     local PL = Instance.new("UIListLayout", Page)
     PL.Padding, PL.SortOrder = UDim.new(0, 10), Enum.SortOrder.LayoutOrder
@@ -286,6 +287,22 @@ function Spiem:AddTab(options)
         Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
     end
+    BTN.MouseEnter:Connect(function()
+        if not Page.Parent.Visible then
+            Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.8})
+        end
+    end)
+    BTN.MouseLeave:Connect(function()
+        if not Page.Parent.Visible then
+            Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
+        end
+    end)
+    BTN.MouseButton1Down:Connect(function()
+        Tween(BTN, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, -5, 0, 32)})
+    end)
+    BTN.MouseButton1Up:Connect(function()
+        Tween(BTN, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 34)})
+    end)
     BTN.MouseButton1Click:Connect(function() tab:Select() end)
     table.insert(Hub.Tabs, {Button = BTN, Page = Page})
     if #Hub.Tabs == 1 then tab:Select() end
