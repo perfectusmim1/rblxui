@@ -285,26 +285,20 @@ function Spiem:AddTab(options)
         if Hub.CurrentTab == tab then return end
         Hub.CurrentTab = tab
 
+        -- Instantly hide ALL other tabs first
         for _, t in pairs(Hub.Tabs) do
-            local otherCG = t.Page.Parent
-            if otherCG.Visible and otherCG ~= Page.Parent then
-                -- Fast hide old tab
-                Tween(otherCG, {0.1, Enum.EasingStyle.Linear}, {GroupTransparency = 1})
-                task.delay(0.1, function() otherCG.Visible = false end)
-            end
-            Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            t.Page.Parent.Visible = false
+            Tween(t.Button, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
-            if ind then Tween(ind, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
+            if ind then Tween(ind, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
         end
         
-        local myCG = Page.Parent
-        myCG.Visible = true
-        myCG.GroupTransparency = 1
-        myCG.Position = UDim2.new(0, 0, 0, 8) -- Subtle rise from bottom
-        Tween(myCG, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
+        -- Then show only THIS tab
+        Page.Parent.Visible = true
+        Page.Parent.GroupTransparency = 0
         
-        Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
-        Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
+        Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(Indicator, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
