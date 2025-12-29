@@ -47,6 +47,7 @@ end
 
 -- Notification System
 local NotifGui = Instance.new("ScreenGui")
+Spiem.NotifGui = NotifGui
 NotifGui.Name = "SpiemNotifications"
 NotifGui.Parent = (RunService:IsStudio() and game.Players.LocalPlayer:WaitForChild("PlayerGui")) or CoreGui
 NotifGui.DisplayOrder = 100
@@ -62,6 +63,7 @@ function Spiem:Notify(options)
     local title = options.Title or "Notification"
     local content = options.Content or ""
     local duration = options.Duration or 5
+    if not Spiem.NotifGui or not Spiem.NotifGui.Parent then return end
 
     local frame = Instance.new("Frame", NotifContainer)
     frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -187,13 +189,22 @@ function Spiem.new(options)
     CreateTopbarBtn("rbxassetid://7072706663", Color3.fromRGB(200, 200, 200), ToggleMinimize) -- Minimize
     CreateTopbarBtn("rbxassetid://7072725342", Color3.fromRGB(255, 80, 80), function() self:Destroy() end) -- Close
 
-    UserInputService.InputBegan:Connect(function(i, g)
+    self.ToggleConnection = UserInputService.InputBegan:Connect(function(i, g)
         if not g and i.KeyCode == self.MinimizeKey then ToggleMinimize() end
     end)
     return self
 end
 
-function Spiem:Destroy() self.ScreenGui:Destroy() end
+function Spiem:Destroy()
+    if self.ToggleConnection then self.ToggleConnection:Disconnect() end
+    
+    -- Shutdown animation
+    Tween(self.MainFrame, {0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), Position = UDim2.new(0.5, -290, 0.5, 0), BackgroundTransparency = 1})
+    
+    task.wait(0.3)
+    self.ScreenGui:Destroy()
+    if Spiem.NotifGui then Spiem.NotifGui:Destroy() end
+end
 
 -- Dialog
 function Spiem:Dialog(options)
