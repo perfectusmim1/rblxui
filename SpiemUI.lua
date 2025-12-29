@@ -376,7 +376,7 @@ function Spiem:CreateTab(name)
         local label = Instance.new("TextLabel")
         label.BackgroundTransparency = 1
         label.Size = UDim2.new(1, 0, 1, 0)
-        label.Font = Enum.Font.BuilderSansItalic
+        label.Font = Enum.Font.BuilderSans
         label.Text = text
         label.TextColor3 = Color3.fromRGB(150, 150, 150)
         label.TextSize = 13
