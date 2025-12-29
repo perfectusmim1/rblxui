@@ -3,7 +3,7 @@
     Konfigürasyon kaydetme ve yükleme sistemi
     
     Kullanım:
-    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/main/Addons/SaveManager.lua"))()
+    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/Addons/SaveManager.lua"))()
 ]]
 
 local HttpService = game:GetService("HttpService")
