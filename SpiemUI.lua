@@ -134,8 +134,10 @@ function Spiem.new(options)
     self.PageContainer = Instance.new("Frame", self.MainFrame)
     self.PageContainer.BackgroundTransparency, self.PageContainer.Position, self.PageContainer.Size = 1, UDim2.new(0, 190, 0, 60), UDim2.new(1, -205, 1, -75)
 
+    self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.RightControl
+
     UserInputService.InputBegan:Connect(function(i, g)
-        if not g and i.KeyCode == Enum.KeyCode.RightControl then self.MainFrame.Visible = not self.MainFrame.Visible end
+        if not g and i.KeyCode == self.MinimizeKey then self.MainFrame.Visible = not self.MainFrame.Visible end
     end)
     return self
 end
@@ -506,12 +508,15 @@ function Spiem:AddTab(options)
             kb_b.Text = "..."
         end)
 
-        UserInputService.InputBegan:Connect(function(input)
-            if listening and input.UserInputType == Enum.UserInputType.Keyboard then
-                key = input.KeyCode.Name
-                kb_b.Text = key
-                listening = false
-                Spiem.Options[idx].Value = key
+        UserInputService.InputBegan:Connect(function(input, gpe)
+            if listening then
+                if input.UserInputType == Enum.UserInputType.Keyboard then
+                    key = input.KeyCode.Name
+                    kb_b.Text = key
+                    listening = false
+                    Spiem.Options[idx].Value = key
+                end
+            elseif not gpe and input.KeyCode.Name == key then
                 if c then c(key) end
             end
         end)
