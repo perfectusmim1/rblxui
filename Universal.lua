@@ -1,5 +1,5 @@
 --[[
-    SpiemUI V1.4 - Advanced Universal Script
+    SpiemUI V1.4.1 - Advanced Universal Script
     Comprehensive script for any Roblox game.
     Now with SaveManager & InterfaceManager support!
 ]]
@@ -32,7 +32,8 @@ local Config = {
     Fullbright = false,
     NoFog = false,
     AntiAFK = true,
-    ClickTP = false
+    ClickTP = false,
+    TPDelay = 1
 }
 
 -- Setup Managers
@@ -54,31 +55,31 @@ local Window = Spiem.new({
 })
 
 local Tabs = {
-    Player = Window:AddTab("Oyuncu"),
-    Visuals = Window:AddTab("Görsel"),
+    Player = Window:AddTab("Player"),
+    Visuals = Window:AddTab("Visuals"),
     Teleport = Window:AddTab("Teleport"),
-    Misc = Window:AddTab("Diğer"),
-    Settings = Window:AddTab("Ayarlar")
+    Misc = Window:AddTab("Misc"),
+    Settings = Window:AddTab("Settings")
 }
 
 -- Notify on Load
 Spiem:Notify({
     Title = "Spiem Universal",
-    Content = "Script başarıyla yüklendi!\nSol CTRL ile menüyü aç/kapat.",
+    Content = "Script loaded successfully!\nLeft CTRL to toggle menu.",
     Duration = 5
 })
 
 -- ============================================
--- OYUNCU (Player) TAB
+-- PLAYER TAB
 -- ============================================
 do
     Tabs.Player:AddParagraph({
-        Title = "Hareket Ayarları",
-        Content = "Karakterinizin hız ve zıplama değerlerini ayarlayın."
+        Title = "Movement Settings",
+        Content = "Adjust your character's speed and jump values."
     })
 
     Tabs.Player:AddSlider("WalkSpeed", {
-        Title = "Yürüme Hızı",
+        Title = "Walk Speed",
         Min = 16,
         Max = 500,
         Default = 16,
@@ -87,7 +88,7 @@ do
     })
 
     Tabs.Player:AddSlider("JumpPower", {
-        Title = "Zıplama Gücü",
+        Title = "Jump Power",
         Min = 50,
         Max = 500,
         Default = 50,
@@ -96,7 +97,7 @@ do
     })
 
     Tabs.Player:AddSlider("Gravity", {
-        Title = "Yerçekimi",
+        Title = "Gravity",
         Min = 50,
         Max = 500,
         Default = 196,
@@ -108,25 +109,25 @@ do
     })
 
     Tabs.Player:AddToggle("InfJump", {
-        Title = "Sınırsız Zıplama",
+        Title = "Infinite Jump",
         Default = false,
         Callback = function(v)
             Config.InfiniteJump = v
-            Spiem:Notify({Title = "Sınırsız Zıplama", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Infinite Jump", Content = v and "Enabled!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Player:AddToggle("Noclip", {
-        Title = "Noclip (Duvardan Geç)",
+        Title = "Noclip (Walk Through Walls)",
         Default = false,
         Callback = function(v)
             Config.Noclip = v
-            Spiem:Notify({Title = "Noclip", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Noclip", Content = v and "Enabled!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Player:AddToggle("FlyToggle", {
-        Title = "Uçma (Fly)",
+        Title = "Fly",
         Default = false,
         Callback = function(v)
             Config.Fly = v
@@ -137,12 +138,12 @@ do
                 if bv then bv:Destroy() end
                 if bg then bg:Destroy() end
             end
-            Spiem:Notify({Title = "Fly", Content = v and "WASD + Space/Shift ile uç!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Fly", Content = v and "WASD + Space/Shift to fly!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Player:AddSlider("FlySpeed", {
-        Title = "Uçma Hızı",
+        Title = "Fly Speed",
         Min = 10,
         Max = 300,
         Default = 50,
@@ -151,31 +152,31 @@ do
     })
 
     Tabs.Player:AddButton({
-        Title = "Karakteri Yenile",
+        Title = "Respawn Character",
         Callback = function()
             LP.Character:FindFirstChildOfClass("Humanoid").Health = 0
-            Spiem:Notify({Title = "Karakter", Content = "Yenileniyor...", Duration = 2})
+            Spiem:Notify({Title = "Character", Content = "Respawning...", Duration = 2})
         end
     })
 end
 
 -- ============================================
--- GÖRSEL (Visuals) TAB
+-- VISUALS TAB
 -- ============================================
 do
-    Tabs.Visuals:AddParagraph({Title = "ESP Ayarları", Content = "Diğer oyuncuları görmenizi kolaylaştırır."})
+    Tabs.Visuals:AddParagraph({Title = "ESP Settings", Content = "See other players through walls."})
 
     Tabs.Visuals:AddToggle("ESPToggle", {
-        Title = "Oyuncu ESP",
+        Title = "Player ESP",
         Default = false,
         Callback = function(v)
             Config.ESP = v
-            Spiem:Notify({Title = "ESP", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "ESP", Content = v and "Enabled!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Visuals:AddColorpicker("ESPColor", {
-        Title = "ESP Rengi",
+        Title = "ESP Color",
         Default = Color3.fromRGB(0, 255, 120),
         Callback = function(clr) Config.ESPColor = clr end
     })
@@ -190,27 +191,27 @@ do
             else
                 Lighting.Brightness, Lighting.GlobalShadows = 1, true
             end
-            Spiem:Notify({Title = "Fullbright", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Fullbright", Content = v and "Enabled!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Visuals:AddToggle("NoFog", {
-        Title = "Sisi Kaldır",
+        Title = "Remove Fog",
         Default = false,
         Callback = function(v)
             Config.NoFog = v
             Lighting.FogEnd = v and 100000 or 1000
-            Spiem:Notify({Title = "Sis", Content = v and "Kaldırıldı!" or "Geri geldi.", Duration = 2})
+            Spiem:Notify({Title = "Fog", Content = v and "Removed!" or "Restored.", Duration = 2})
         end
     })
 
     Tabs.Visuals:AddDropdown("TimeOfDay", {
-        Title = "Gün Zamanı",
-        Values = {"Sabah", "Öğlen", "Akşam", "Gece"},
-        Default = "Öğlen",
+        Title = "Time of Day",
+        Values = {"Morning", "Noon", "Evening", "Night"},
+        Default = "Noon",
         Multi = false,
         Callback = function(v)
-            local times = {Sabah = 6, ["Öğlen"] = 12, ["Akşam"] = 18, Gece = 0}
+            local times = {Morning = 6, Noon = 12, Evening = 18, Night = 0}
             Lighting.ClockTime = times[v] or 12
         end
     })
@@ -219,47 +220,113 @@ end
 -- ============================================
 -- TELEPORT TAB
 -- ============================================
+local SelectedPlayers = {}
+local TPPlayerDropdown
+
 do
-    Tabs.Teleport:AddParagraph({Title = "Teleport", Content = "Oyuncuların yanına veya koordinatlara ışınlanın."})
+    Tabs.Teleport:AddParagraph({Title = "Teleport", Content = "Teleport to players or coordinates."})
 
     Tabs.Teleport:AddToggle("ClickTP", {
-        Title = "Tıkla Işınlan (Ctrl + Click)",
+        Title = "Click Teleport (Ctrl + Click)",
         Default = false,
         Callback = function(v)
             Config.ClickTP = v
-            Spiem:Notify({Title = "Click TP", Content = v and "CTRL + Mouse ile ışınlan!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Click TP", Content = v and "CTRL + Mouse to teleport!" or "Disabled.", Duration = 2})
         end
     })
 
-    local playerNames = {}
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LP then table.insert(playerNames, p.Name) end
+    -- Get player names
+    local function getPlayerNames()
+        local names = {}
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LP then table.insert(names, p.Name) end
+        end
+        return names
     end
 
+    -- Single player teleport
     Tabs.Teleport:AddDropdown("TPPlayer", {
-        Title = "Oyuncuya Işınlan",
-        Values = playerNames,
-        Default = playerNames[1] or "Yok",
+        Title = "Teleport to Player",
+        Values = getPlayerNames(),
+        Default = getPlayerNames()[1] or "None",
         Multi = false,
         Callback = function(v)
             local target = Players:FindFirstChild(v)
             if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
                 LP.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-                Spiem:Notify({Title = "Teleport", Content = v .. " oyuncusuna ışınlandın!", Duration = 2})
+                Spiem:Notify({Title = "Teleport", Content = "Teleported to " .. v .. "!", Duration = 2})
             end
         end
     })
 
+    -- Multi-select players for sequential TP
+    TPPlayerDropdown = Tabs.Teleport:AddDropdown("MultiTPPlayers", {
+        Title = "Select Players (Multi)",
+        Values = getPlayerNames(),
+        Multi = true,
+        Default = {},
+        Callback = function(selected)
+            SelectedPlayers = {}
+            for name, isSelected in pairs(selected) do
+                if isSelected then table.insert(SelectedPlayers, name) end
+            end
+        end
+    })
+
+    Tabs.Teleport:AddSlider("TPDelay", {
+        Title = "TP Delay (seconds)",
+        Min = 0.5,
+        Max = 10,
+        Default = 1,
+        Rounding = 0.5,
+        Callback = function(v) Config.TPDelay = v end
+    })
+
     Tabs.Teleport:AddButton({
-        Title = "Spawn'a Işınlan",
+        Title = "Sequential Teleport",
+        Description = "Teleport to all selected players with delay",
+        Callback = function()
+            if #SelectedPlayers == 0 then
+                Spiem:Notify({Title = "Error", Content = "No players selected!", Duration = 2})
+                return
+            end
+
+            Spiem:Notify({Title = "Sequential TP", Content = "Starting teleport to " .. #SelectedPlayers .. " players...", Duration = 3})
+
+            task.spawn(function()
+                for i, playerName in ipairs(SelectedPlayers) do
+                    local target = Players:FindFirstChild(playerName)
+                    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                        LP.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+                        Spiem:Notify({Title = "Teleport " .. i .. "/" .. #SelectedPlayers, Content = "Teleported to " .. playerName, Duration = Config.TPDelay})
+                        task.wait(Config.TPDelay)
+                    end
+                end
+                Spiem:Notify({Title = "Complete", Content = "Sequential teleport finished!", Duration = 3})
+            end)
+        end
+    })
+
+    Tabs.Teleport:AddButton({
+        Title = "Refresh Player List",
+        Callback = function()
+            local newNames = getPlayerNames()
+            TPPlayerDropdown:Refresh(newNames)
+            Spiem.Options.TPPlayer:Refresh(newNames)
+            Spiem:Notify({Title = "Refreshed", Content = "Player list updated!", Duration = 2})
+        end
+    })
+
+    Tabs.Teleport:AddButton({
+        Title = "Teleport to Spawn",
         Callback = function()
             LP.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-            Spiem:Notify({Title = "Teleport", Content = "Spawn'a ışınlandın.", Duration = 2})
+            Spiem:Notify({Title = "Teleport", Content = "Teleported to spawn.", Duration = 2})
         end
     })
 
     Tabs.Teleport:AddInput("CustomTP", {
-        Title = "Koordinat (X,Y,Z)",
+        Title = "Coordinates (X,Y,Z)",
         Placeholder = "0,50,0",
         Callback = function(v)
             local coords = string.split(v, ",")
@@ -267,7 +334,7 @@ do
                 local x, y, z = tonumber(coords[1]), tonumber(coords[2]), tonumber(coords[3])
                 if x and y and z then
                     LP.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
-                    Spiem:Notify({Title = "Teleport", Content = "Koordinata ışınlandın!", Duration = 2})
+                    Spiem:Notify({Title = "Teleport", Content = "Teleported to coordinates!", Duration = 2})
                 end
             end
         end
@@ -275,44 +342,44 @@ do
 end
 
 -- ============================================
--- DİĞER (Misc) TAB
+-- MISC TAB
 -- ============================================
 do
-    Tabs.Misc:AddParagraph({Title = "Ek Özellikler", Content = "Anti-AFK, Sunucu araçları ve daha fazlası."})
+    Tabs.Misc:AddParagraph({Title = "Extra Features", Content = "Anti-AFK, server tools and more."})
 
     Tabs.Misc:AddToggle("AntiAFK", {
         Title = "Anti-AFK",
         Default = true,
         Callback = function(v)
             Config.AntiAFK = v
-            Spiem:Notify({Title = "Anti-AFK", Content = v and "AFK atılmayacaksın!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Anti-AFK", Content = v and "You won't be kicked!" or "Disabled.", Duration = 2})
         end
     })
 
     Tabs.Misc:AddButton({
-        Title = "Tüm Oyuncuları Listele",
+        Title = "List All Players",
         Callback = function()
             local list = ""
             for _, p in pairs(Players:GetPlayers()) do list = list .. p.Name .. "\n" end
-            Spiem:Notify({Title = "Oyuncular (" .. #Players:GetPlayers() .. ")", Content = list, Duration = 8})
+            Spiem:Notify({Title = "Players (" .. #Players:GetPlayers() .. ")", Content = list, Duration = 8})
         end
     })
 
     Tabs.Misc:AddButton({
-        Title = "Sunucu Bilgisi",
+        Title = "Server Info",
         Callback = function()
-            local info = "Oyun: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+            local info = "Game: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
             info = info .. "\nPlaceId: " .. game.PlaceId
-            info = info .. "\nOyuncu: " .. #Players:GetPlayers()
-            Spiem:Notify({Title = "Sunucu", Content = info, Duration = 10})
+            info = info .. "\nPlayers: " .. #Players:GetPlayers()
+            Spiem:Notify({Title = "Server", Content = info, Duration = 10})
         end
     })
 
     Tabs.Misc:AddButton({
         Title = "Rejoin",
-        Description = "Aynı sunucuya tekrar bağlan",
+        Description = "Reconnect to the same server",
         Callback = function()
-            Spiem:Notify({Title = "Rejoin", Content = "Bağlanılıyor...", Duration = 2})
+            Spiem:Notify({Title = "Rejoin", Content = "Reconnecting...", Duration = 2})
             task.wait(1)
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LP)
         end
@@ -320,9 +387,9 @@ do
 
     Tabs.Misc:AddButton({
         Title = "Server Hop",
-        Description = "Başka sunucuya atla",
+        Description = "Jump to another server",
         Callback = function()
-            Spiem:Notify({Title = "Server Hop", Content = "Sunucu aranıyor...", Duration = 2})
+            Spiem:Notify({Title = "Server Hop", Content = "Finding server...", Duration = 2})
             task.wait(1)
             local servers = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
             for _, server in pairs(servers.data) do
@@ -331,13 +398,13 @@ do
                     return
                 end
             end
-            Spiem:Notify({Title = "Hata", Content = "Uygun sunucu bulunamadı!", Duration = 3})
+            Spiem:Notify({Title = "Error", Content = "No suitable server found!", Duration = 3})
         end
     })
 end
 
 -- ============================================
--- AYARLAR (Settings) TAB - Config & Interface
+-- SETTINGS TAB - Config & Interface
 -- ============================================
 do
     -- Interface Section
@@ -347,13 +414,13 @@ do
     SaveManager:BuildConfigSection(Tabs.Settings)
 
     Tabs.Settings:AddButton({
-        Title = "Scripti Kapat",
-        Description = "Tüm özellikleri kapatır ve menüyü siler",
+        Title = "Close Script",
+        Description = "Disables all features and removes menu",
         Callback = function() Window:Destroy() end
     })
 
     Tabs.Settings:AddParagraph({
-        Title = "Hakkında",
+        Title = "About",
         Content = "SpiemUI Library V" .. Spiem.Version .. "\nby perfectusmim1"
     })
 end
@@ -446,4 +513,4 @@ Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Wait(); CreateESP(p) en
 -- Load autoload config if exists
 SaveManager:LoadAutoloadConfig()
 
-Spiem:Notify({Title = "Hazır!", Content = "Tüm özellikler aktif. İyi eğlenceler!", Duration = 3})
+Spiem:Notify({Title = "Ready!", Content = "All features active. Have fun!", Duration = 3})

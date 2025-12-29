@@ -65,7 +65,8 @@ function Spiem:Notify(options)
 
     local frame = Instance.new("Frame", NotifContainer)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    frame.Size = UDim2.new(1, 0, 0, 0) -- Starts at 0 height
+    frame.Size = UDim2.new(1, 0, 0, 0)
+    frame.Position = UDim2.new(0, 0, 0, 0)
     frame.ClipsDescendants = true
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
     local s = Instance.new("UIStroke", frame)
@@ -82,10 +83,18 @@ function Spiem:Notify(options)
     local height = 40 + c.TextBounds.Y
     c.Size = UDim2.new(1, -30, 0, c.TextBounds.Y)
     
-    Tween(frame, {0.4, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, height)})
+    -- Smooth open animation
+    Tween(frame, {0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, height)})
     
     task.delay(duration, function()
-        Tween(frame, {0.3, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 400, 0, height), BackgroundTransparency = 1})
+        -- Smooth close: slide right + fade out
+        Tween(frame, {0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In}, {Position = UDim2.new(1, 50, 0, 0)})
+        Tween(s, {0.3, Enum.EasingStyle.Quint}, {Transparency = 1})
+        task.wait(0.15)
+        Tween(t, {0.25, Enum.EasingStyle.Quint}, {TextTransparency = 1})
+        Tween(c, {0.25, Enum.EasingStyle.Quint}, {TextTransparency = 1})
+        task.wait(0.3)
+        Tween(frame, {0.3, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 0)})
         task.wait(0.3)
         frame:Destroy()
     end)
@@ -504,14 +513,23 @@ function Spiem:AddTab(options)
         local dropFuncs = {Type = "Dropdown", Value = sel}
         function dropFuncs:OnChanged(callback) c = callback end
         function dropFuncs:SetValue(v)
-            if type(v) == "table" then
-                -- Refresh dropdown values
+            if type(v) == "table" and not multi then
+                -- Refresh dropdown values list
                 values = v
+                sel = v[1] or sel
+            elseif type(v) == "table" and multi then
+                sel = v
             else
                 sel = v
             end
             upd_l()
-            if c then c(sel) end
+        end
+        function dropFuncs:Refresh(newValues)
+            values = newValues
+            upd_l()
+        end
+        function dropFuncs:GetValue()
+            return sel
         end
         Spiem.Options[idx] = dropFuncs
         return dropFuncs
@@ -635,16 +653,21 @@ function Spiem:AddTab(options)
         local f = Instance.new("Frame", Page)
         f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 60)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
-        local t = Instance.new("TextLabel", f)
-        t.BackgroundTransparency, t.Position, t.Size, t.Font = 1, UDim2.new(0, 15, 0, 10), UDim2.new(1, -30, 0, 18), Enum.Font.BuilderSansBold
-        t.Text, t.TextColor3, t.TextSize, t.TextXAlignment = options.Title or "Paragraph", Color3.fromRGB(240, 240, 240), 14, Enum.TextXAlignment.Left
-        local c = Instance.new("TextLabel", f)
-        c.BackgroundTransparency, c.Position, c.Size, c.Font = 1, UDim2.new(0, 15, 0, 30), UDim2.new(1, -30, 0, 24), Enum.Font.BuilderSans
-        c.Text, c.TextColor3, c.TextSize, c.TextXAlignment, c.TextWrapped = options.Content or "", Color3.fromRGB(180, 180, 180), 12, Enum.TextXAlignment.Left, true
-        c:GetPropertyChangedSignal("TextBounds"):Connect(function()
-            f.Size = UDim2.new(1, 0, 0, c.TextBounds.Y + 45)
-            c.Size = UDim2.new(1, -30, 0, c.TextBounds.Y)
+        local titleLabel = Instance.new("TextLabel", f)
+        titleLabel.BackgroundTransparency, titleLabel.Position, titleLabel.Size, titleLabel.Font = 1, UDim2.new(0, 15, 0, 10), UDim2.new(1, -30, 0, 18), Enum.Font.BuilderSansBold
+        titleLabel.Text, titleLabel.TextColor3, titleLabel.TextSize, titleLabel.TextXAlignment = options.Title or "Paragraph", Color3.fromRGB(240, 240, 240), 14, Enum.TextXAlignment.Left
+        local contentLabel = Instance.new("TextLabel", f)
+        contentLabel.BackgroundTransparency, contentLabel.Position, contentLabel.Size, contentLabel.Font = 1, UDim2.new(0, 15, 0, 30), UDim2.new(1, -30, 0, 24), Enum.Font.BuilderSans
+        contentLabel.Text, contentLabel.TextColor3, contentLabel.TextSize, contentLabel.TextXAlignment, contentLabel.TextWrapped = options.Content or "", Color3.fromRGB(180, 180, 180), 12, Enum.TextXAlignment.Left, true
+        contentLabel:GetPropertyChangedSignal("TextBounds"):Connect(function()
+            f.Size = UDim2.new(1, 0, 0, contentLabel.TextBounds.Y + 45)
+            contentLabel.Size = UDim2.new(1, -30, 0, contentLabel.TextBounds.Y)
         end)
+
+        local paragraphFuncs = {}
+        function paragraphFuncs:SetTitle(newTitle) titleLabel.Text = newTitle end
+        function paragraphFuncs:SetContent(newContent) contentLabel.Text = newContent end
+        return paragraphFuncs
     end
 
     return tab
