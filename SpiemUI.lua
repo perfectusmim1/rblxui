@@ -258,8 +258,9 @@ function Spiem:AddTab(options)
         lt.BackgroundTransparency, lt.Position, lt.Size, lt.Font = 1, UDim2.new(0, 15, 0, desc and 8 or 0), UDim2.new(1, -30, 0, 24), Enum.Font.BuilderSansMedium
         lt.Text, lt.TextColor3, lt.TextSize, lt.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
 
+        local ld = nil
         if desc then
-            local ld = Instance.new("TextLabel", f)
+            ld = Instance.new("TextLabel", f)
             ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -30, 0, 20), Enum.Font.BuilderSans
             ld.Text, ld.TextColor3, ld.TextSize, ld.TextXAlignment = desc, Color3.fromRGB(150, 150, 150), 12, Enum.TextXAlignment.Left
         end
@@ -270,6 +271,21 @@ function Spiem:AddTab(options)
             Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)})
             if c then c() end
         end)
+
+        local btnFuncs = {}
+        function btnFuncs:SetDesc(newDesc)
+            if ld then
+                ld.Text = newDesc
+            else
+                -- Create description label if it doesn't exist
+                ld = Instance.new("TextLabel", f)
+                ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -30, 0, 20), Enum.Font.BuilderSans
+                ld.Text, ld.TextColor3, ld.TextSize, ld.TextXAlignment = newDesc, Color3.fromRGB(150, 150, 150), 12, Enum.TextXAlignment.Left
+                lt.Position = UDim2.new(0, 15, 0, 8)
+                f.Size = UDim2.new(1, 0, 0, 55)
+            end
+        end
+        return btnFuncs
     end
 
     function tab:AddToggle(idx, options)
@@ -792,27 +808,27 @@ end
 function SaveManager:BuildConfigSection(tab)
     assert(self.Library, "SaveManager.Library must be set!")
 
-    tab:AddParagraph({Title = "Config System", Content = "Save and load your settings."})
+    tab:AddParagraph({Title = "Configuration", Content = "Save and load your settings."})
 
-    tab:AddInput("SaveManager_ConfigName", {Title = "Config Name", Placeholder = "Enter a name..."})
+    tab:AddInput("SaveManager_ConfigName", {Title = "Config name", Placeholder = ""})
 
     local configList = tab:AddDropdown("SaveManager_ConfigList", {
-        Title = "Config List",
+        Title = "Config list",
         Values = self:RefreshConfigList(),
         Multi = false
     })
 
     tab:AddButton({
-        Title = "Save Config",
+        Title = "Create config",
         Callback = function()
             local name = self.Options.SaveManager_ConfigName and self.Options.SaveManager_ConfigName.Value
             if not name or name == "" then
-                return self.Library:Notify({Title = "Error", Content = "Please enter a config name!", Duration = 3})
+                return self.Library:Notify({Title = "Error", Content = "Invalid config name (empty)", Duration = 3})
             end
             local success, err = self:Save(name)
             if success then
-                self.Library:Notify({Title = "Success", Content = "Config saved: " .. name, Duration = 3})
-                configList:SetValue(self:RefreshConfigList())
+                self.Library:Notify({Title = "Success", Content = "Created config: " .. name, Duration = 3})
+                configList:Refresh(self:RefreshConfigList())
             else
                 self.Library:Notify({Title = "Error", Content = err, Duration = 3})
             end
@@ -820,15 +836,15 @@ function SaveManager:BuildConfigSection(tab)
     })
 
     tab:AddButton({
-        Title = "Load Config",
+        Title = "Load config",
         Callback = function()
             local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
             if not name then
-                return self.Library:Notify({Title = "Error", Content = "Please select a config!", Duration = 3})
+                return self.Library:Notify({Title = "Error", Content = "No config selected", Duration = 3})
             end
             local success, err = self:Load(name)
             if success then
-                self.Library:Notify({Title = "Success", Content = "Config loaded: " .. name, Duration = 3})
+                self.Library:Notify({Title = "Success", Content = "Loaded config: " .. name, Duration = 3})
             else
                 self.Library:Notify({Title = "Error", Content = err, Duration = 3})
             end
@@ -836,21 +852,51 @@ function SaveManager:BuildConfigSection(tab)
     })
 
     tab:AddButton({
-        Title = "Set as Autoload",
+        Title = "Overwrite config",
+        Callback = function()
+            local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
+            if not name then
+                return self.Library:Notify({Title = "Error", Content = "No config selected", Duration = 3})
+            end
+            local success, err = self:Save(name)
+            if success then
+                self.Library:Notify({Title = "Success", Content = "Overwrote config: " .. name, Duration = 3})
+            else
+                self.Library:Notify({Title = "Error", Content = err, Duration = 3})
+            end
+        end
+    })
+
+    tab:AddButton({
+        Title = "Refresh list",
+        Callback = function()
+            configList:Refresh(self:RefreshConfigList())
+        end
+    })
+
+    -- Get current autoload name
+    local currentAutoload = "none"
+    local autoloadPath = self.Folder .. "/settings/autoload.txt"
+    if isfile(autoloadPath) then
+        currentAutoload = readfile(autoloadPath)
+    end
+
+    local autoloadBtn
+    autoloadBtn = tab:AddButton({
+        Title = "Set as autoload",
+        Description = "Current autoload config: " .. currentAutoload,
         Callback = function()
             local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
             if name then
                 writefile(self.Folder .. "/settings/autoload.txt", name)
-                self.Library:Notify({Title = "Success", Content = name .. " will auto-load!", Duration = 3})
+                self.Library:Notify({Title = "Success", Content = "Set " .. name .. " to auto load", Duration = 3})
+                -- Update description (we need SetDesc method)
+                if autoloadBtn and autoloadBtn.SetDesc then
+                    autoloadBtn:SetDesc("Current autoload config: " .. name)
+                end
+            else
+                self.Library:Notify({Title = "Error", Content = "No config selected", Duration = 3})
             end
-        end
-    })
-
-    tab:AddButton({
-        Title = "Refresh List",
-        Callback = function()
-            configList:SetValue(self:RefreshConfigList())
-            self.Library:Notify({Title = "Success", Content = "List refreshed!", Duration = 2})
         end
     })
 
