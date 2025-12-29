@@ -144,6 +144,7 @@ function Spiem.new(options)
 
     self.PageContainer = Instance.new("Frame", self.MainFrame)
     self.PageContainer.BackgroundTransparency, self.PageContainer.Position, self.PageContainer.Size = 1, UDim2.new(0, 190, 0, 60), UDim2.new(1, -205, 1, -75)
+    self.PageContainer.ClipsDescendants = true
 
     self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.LeftControl
 
@@ -171,11 +172,23 @@ function Spiem.new(options)
         return b
     end
 
-    CreateTopbarBtn("rbxassetid://7072706663", Color3.fromRGB(200, 200, 200), function() self.MainFrame.Visible = false end) -- Minimize
+    local minimized = false
+    local function ToggleMinimize()
+        minimized = not minimized
+        if minimized then
+            Tween(self.MainFrame, {0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), BackgroundTransparency = 1})
+            task.delay(0.2, function() if minimized then self.MainFrame.Visible = false end end)
+        else
+            self.MainFrame.Visible = true
+            Tween(self.MainFrame, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 580, 0, 460), BackgroundTransparency = 0})
+        end
+    end
+
+    CreateTopbarBtn("rbxassetid://7072706663", Color3.fromRGB(200, 200, 200), ToggleMinimize) -- Minimize
     CreateTopbarBtn("rbxassetid://7072725342", Color3.fromRGB(255, 80, 80), function() self:Destroy() end) -- Close
 
     UserInputService.InputBegan:Connect(function(i, g)
-        if not g and i.KeyCode == self.MinimizeKey then self.MainFrame.Visible = not self.MainFrame.Visible end
+        if not g and i.KeyCode == self.MinimizeKey then ToggleMinimize() end
     end)
     return self
 end
@@ -237,6 +250,12 @@ function Spiem:AddTab(options)
     Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 6
     Page.ScrollBarImageColor3, Page.CanvasSize = Color3.fromRGB(120, 120, 120), UDim2.new(0, 0, 0, 0)
     Page.ScrollBarImageTransparency = 0.4
+    
+    local CG = Instance.new("CanvasGroup", Page.Parent)
+    CG.BackgroundTransparency, CG.Size, CG.Visible = 1, UDim2.new(1, 0, 1, 0), false
+    Page.Parent = CG
+    Page.Size = UDim2.new(1, 0, 1, 0)
+
     local PL = Instance.new("UIListLayout", Page)
     PL.Padding, PL.SortOrder = UDim.new(0, 10), Enum.SortOrder.LayoutOrder
     local PAdd = Instance.new("UIPadding", Page)
@@ -250,11 +269,20 @@ function Spiem:AddTab(options)
 
     function tab:Select()
         for _, t in pairs(Hub.Tabs) do
-            t.Page.Visible = false
+            if t.Page.Parent.Visible then
+                Tween(t.Page.Parent, {0.15, Enum.EasingStyle.Quint}, {GroupTransparency = 1})
+                task.delay(0.15, function() t.Page.Parent.Visible = false end)
+            end
             Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             Tween(t.Button:FindFirstChild("Frame"), {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
         end
-        Page.Visible = true
+        
+        local myCG = Page.Parent
+        myCG.Visible = true
+        myCG.GroupTransparency = 1
+        myCG.Position = UDim2.new(0, 10, 0, 0)
+        Tween(myCG, {0.25, Enum.EasingStyle.Quint}, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
+        
         Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
     end
