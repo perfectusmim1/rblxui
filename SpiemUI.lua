@@ -234,12 +234,14 @@ function Spiem:AddTab(options)
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
 
     local Page = Instance.new("ScrollingFrame", Hub.PageContainer)
-    Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 2
-    Page.ScrollBarImageColor3, Page.CanvasSize = Color3.fromRGB(80, 80, 80), UDim2.new(0, 0, 0, 0)
+    Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 6
+    Page.ScrollBarImageColor3, Page.CanvasSize = Color3.fromRGB(120, 120, 120), UDim2.new(0, 0, 0, 0)
+    Page.ScrollBarImageTransparency = 0.4
     local PL = Instance.new("UIListLayout", Page)
     PL.Padding, PL.SortOrder = UDim.new(0, 10), Enum.SortOrder.LayoutOrder
-    Instance.new("UIPadding", Page).PaddingLeft, Instance.new("UIPadding", Page).PaddingTop = UDim.new(0, 2), UDim.new(0, 2)
-    PL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() Page.CanvasSize = UDim2.new(0, 0, 0, PL.AbsoluteContentSize.Y + 10) end)
+    local PAdd = Instance.new("UIPadding", Page)
+    PAdd.PaddingLeft, PAdd.PaddingTop, PAdd.PaddingRight = UDim.new(0, 5), UDim.new(0, 5), UDim.new(0, 15)
+    PL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() Page.CanvasSize = UDim2.new(0, 0, 0, PL.AbsoluteContentSize.Y + 20) end)
 
     local PageTitle = Instance.new("TextLabel", Page)
     PageTitle.BackgroundTransparency, PageTitle.Size, PageTitle.Font = 1, UDim2.new(1, 0, 0, 40), Enum.Font.BuilderSansBold
@@ -259,6 +261,23 @@ function Spiem:AddTab(options)
     BTN.MouseButton1Click:Connect(function() tab:Select() end)
     table.insert(Hub.Tabs, {Button = BTN, Page = Page})
     if #Hub.Tabs == 1 then tab:Select() end
+
+    function tab:AddSection(text)
+        local f = Instance.new("Frame", Page)
+        f.BackgroundTransparency, f.Size = 1, UDim2.new(1, 0, 0, 30)
+        
+        local l = Instance.new("TextLabel", f)
+        l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 5, 0, 10), UDim2.new(1, -5, 0, 20), Enum.Font.BuilderSansBold
+        l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = text, Color3.fromRGB(200, 200, 200), 13, Enum.TextXAlignment.Left
+
+        local line = Instance.new("Frame", f)
+        line.BackgroundColor3, line.Position, line.Size = Color3.fromRGB(80, 80, 80), UDim2.new(0, 5, 1, 0), UDim2.new(1, -5, 0, 1)
+        line.BackgroundTransparency = 0.5
+        Instance.new("UIGradient", line).Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+    end
 
     function tab:AddButton(options)
         local t, desc, c = options.Title, options.Description, options.Callback

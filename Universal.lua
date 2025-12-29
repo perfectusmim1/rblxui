@@ -68,10 +68,7 @@ local Tabs = {
 -- PLAYER TAB
 -- ============================================
 do
-    Tabs.Player:AddParagraph({
-        Title = "Movement Settings",
-        Content = "Adjust your character's speed and jump values."
-    })
+    Tabs.Player:AddSection("Movement")
 
     Tabs.Player:AddSlider("WalkSpeed", {
         Title = "Walk Speed",
@@ -102,6 +99,8 @@ do
             workspace.Gravity = v
         end
     })
+
+    Tabs.Player:AddSection("Abilities")
 
     Tabs.Player:AddToggle("InfJump", {
         Title = "Infinite Jump",
@@ -146,6 +145,8 @@ do
         Callback = function(v) Config.FlySpeed = v end
     })
 
+    Tabs.Player:AddSection("Actions")
+
     Tabs.Player:AddButton({
         Title = "Respawn Character",
         Callback = function()
@@ -159,7 +160,7 @@ end
 -- VISUALS TAB
 -- ============================================
 do
-    Tabs.Visuals:AddParagraph({Title = "ESP Settings", Content = "See other players through walls."})
+    Tabs.Visuals:AddSection("ESP")
 
     Tabs.Visuals:AddToggle("ESPToggle", {
         Title = "Player ESP",
@@ -175,6 +176,8 @@ do
         Default = Color3.fromRGB(0, 255, 120),
         Callback = function(clr) Config.ESPColor = clr end
     })
+
+    Tabs.Visuals:AddSection("Environment")
 
     Tabs.Visuals:AddToggle("Fullbright", {
         Title = "Fullbright",
@@ -219,7 +222,9 @@ local SelectedPlayers = {}
 local TPPlayerDropdown
 
 do
-    Tabs.Teleport:AddParagraph({Title = "Teleport", Content = "Teleport to players or coordinates."})
+    Tabs.Teleport:AddSection("Player Selection")
+
+    Tabs.Teleport:AddSection("Utilities")
 
     Tabs.Teleport:AddToggle("ClickTP", {
         Title = "Click Teleport (Ctrl + Click)",
@@ -253,6 +258,8 @@ do
             end
         end
     })
+
+    Tabs.Teleport:AddSection("Sequential Teleport")
 
     -- Multi-select players for sequential TP
     TPPlayerDropdown = Tabs.Teleport:AddDropdown("MultiTPPlayers", {
@@ -301,6 +308,8 @@ do
             end)
         end
     })
+
+    Tabs.Teleport:AddSection("Quick Actions")
 
     Tabs.Teleport:AddButton({
         Title = "Refresh Player List",
