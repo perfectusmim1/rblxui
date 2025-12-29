@@ -365,19 +365,16 @@ function Spiem:AddTab(options)
     function tab:AddDropdown(idx, options)
         local t, d, values, multi, c = options.Title, options.Default, options.Values, options.Multi, options.Callback
         local sel = multi and (d or {}) or (d or values[1])
-        Spiem.Options[idx] = {Value = sel}
+        Spiem.Options[idx] = {Value = sel, Type = "Dropdown"}
 
         local f = Instance.new("Frame", Page)
-        f.BackgroundColor3, f.Size, f.ClipsDescendants = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45), true
+        f.BackgroundColor3, f.Size = Color3.fromRGB(25, 25, 25), UDim2.new(1, 0, 0, 45)
         Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
-        
-        local b = Instance.new("TextButton", f)
-        b.BackgroundTransparency, b.Size, b.Text = 1, UDim2.new(1, 0, 0, 45), ""
 
         local l = Instance.new("TextLabel", f)
-        l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(1, -60, 0, 45), Enum.Font.BuilderSansMedium
-        l.TextColor3, l.TextSize, l.TextXAlignment = Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
-        
+        l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 15, 0, 0), UDim2.new(0.5, -15, 1, 0), Enum.Font.BuilderSansMedium
+        l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
+
         local function getSelText()
             if multi then
                 local res = {}
@@ -386,57 +383,137 @@ function Spiem:AddTab(options)
             end
             return tostring(sel)
         end
-        l.Text = t .. ": " .. getSelText()
 
-        local ic = Instance.new("ImageLabel", f)
-        ic.BackgroundTransparency, ic.Position, ic.Size, ic.Image = 1, UDim2.new(1, -30, 0, 14), UDim2.new(0, 16, 0, 16), "rbxassetid://6034818372"
-        ic.ImageColor3 = Color3.fromRGB(180, 180, 180)
+        -- Dropdown Button (right side)
+        local dropBtn = Instance.new("TextButton", f)
+        dropBtn.BackgroundColor3, dropBtn.Position, dropBtn.Size = Color3.fromRGB(35, 35, 35), UDim2.new(0.5, 0, 0.5, -14), UDim2.new(0.5, -15, 0, 28)
+        dropBtn.Font, dropBtn.TextColor3, dropBtn.TextSize, dropBtn.AutoButtonColor = Enum.Font.BuilderSans, Color3.fromRGB(200, 200, 200), 13, false
+        dropBtn.TextTruncate = Enum.TextTruncate.AtEnd
+        dropBtn.Text = "  " .. getSelText()
+        dropBtn.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", dropBtn).CornerRadius = UDim.new(0, 6)
 
-        local ol = Instance.new("Frame", f)
-        ol.BackgroundTransparency, ol.Position, ol.Size = 1, UDim2.new(0, 0, 0, 45), UDim2.new(1, 0, 0, 0)
-        local oll = Instance.new("UIListLayout", ol)
-        oll.Padding, oll.SortOrder = UDim.new(0, 2), Enum.SortOrder.LayoutOrder
+        local ic = Instance.new("ImageLabel", dropBtn)
+        ic.BackgroundTransparency, ic.Position, ic.Size, ic.Image = 1, UDim2.new(1, -22, 0.5, -6), UDim2.new(0, 12, 0, 12), "rbxassetid://6034818372"
+        ic.ImageColor3 = Color3.fromRGB(140, 140, 140)
+
+        -- Floating Popup
+        local popup = Instance.new("Frame", Hub.ScreenGui)
+        popup.Name = "DropdownPopup_" .. idx
+        popup.BackgroundColor3, popup.Size, popup.Visible = Color3.fromRGB(30, 30, 30), UDim2.new(0, 180, 0, 0), false
+        popup.ZIndex, popup.ClipsDescendants = 100, true
+        Instance.new("UICorner", popup).CornerRadius = UDim.new(0, 8)
+        local ps = Instance.new("UIStroke", popup)
+        ps.Color, ps.Transparency = Color3.fromRGB(60, 60, 60), 0.5
+
+        local popupList = Instance.new("ScrollingFrame", popup)
+        popupList.BackgroundTransparency, popupList.Size, popupList.Position = 1, UDim2.new(1, -10, 1, -10), UDim2.new(0, 5, 0, 5)
+        popupList.ScrollBarThickness, popupList.CanvasSize = 2, UDim2.new(0, 0, 0, 0)
+        popupList.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+        local pll = Instance.new("UIListLayout", popupList)
+        pll.Padding, pll.SortOrder = UDim.new(0, 2), Enum.SortOrder.LayoutOrder
 
         local op = false
-        local function upd_l() l.Text = t .. ": " .. getSelText() end
+        local function upd_l()
+            dropBtn.Text = "  " .. getSelText()
+            Spiem.Options[idx].Value = sel
+        end
 
-        b.MouseButton1Click:Connect(function()
-            op = not op
-            if op then
-                for _, v in pairs(ol:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-                for _, o in pairs(values) do
-                    local isSel = multi and sel[o] or (sel == o)
-                    local ob = Instance.new("TextButton", ol)
-                    ob.BackgroundColor3, ob.Size, ob.Font, ob.Text = isSel and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(35, 35, 35), UDim2.new(1, -10, 0, 30), Enum.Font.BuilderSans, "  " .. o
-                    ob.TextColor3, ob.TextSize, ob.AutoButtonColor, ob.TextXAlignment = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200), 13, false, Enum.TextXAlignment.Left
-                    Instance.new("UICorner", ob).CornerRadius = UDim.new(0, 6)
-                    
-                    ob.MouseButton1Click:Connect(function()
-                        if multi then
-                            sel[o] = not sel[o]
-                            ob.BackgroundColor3 = sel[o] and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(35, 35, 35)
-                            ob.TextColor3 = sel[o] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
-                        else
-                            sel = o
-                            op = false
-                            Tween(f, {0.3, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 45)})
-                            Tween(ic, {0.3, Enum.EasingStyle.Quint}, {Rotation = 0})
-                        end
-                        upd_l()
-                        if c then c(sel) end
-                    end)
+        local function closePopup()
+            op = false
+            Tween(popup, {0.2, Enum.EasingStyle.Quint}, {Size = UDim2.new(0, 180, 0, 0)})
+            task.delay(0.2, function() popup.Visible = false end)
+            Tween(ic, {0.2, Enum.EasingStyle.Quint}, {Rotation = 0})
+        end
+
+        local function openPopup()
+            op = true
+            popup.Visible = true
+
+            -- Position popup to the right of the button
+            local absPos = dropBtn.AbsolutePosition
+            local absSize = dropBtn.AbsoluteSize
+            popup.Position = UDim2.fromOffset(absPos.X + absSize.X + 5, absPos.Y)
+
+            -- Clear and rebuild options
+            for _, v in pairs(popupList:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+
+            for _, o in pairs(values) do
+                local isSel = multi and sel[o] or (sel == o)
+                local ob = Instance.new("TextButton", popupList)
+                ob.BackgroundColor3, ob.Size = isSel and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40), UDim2.new(1, 0, 0, 28)
+                ob.Font, ob.Text = Enum.Font.BuilderSans, "  " .. o
+                ob.TextColor3, ob.TextSize, ob.AutoButtonColor, ob.TextXAlignment = Color3.fromRGB(220, 220, 220), 13, false, Enum.TextXAlignment.Left
+                ob.ZIndex = 101
+                Instance.new("UICorner", ob).CornerRadius = UDim.new(0, 6)
+
+                ob.MouseEnter:Connect(function()
+                    if not (multi and sel[o] or (sel == o)) then
+                        Tween(ob, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
+                    end
+                end)
+                ob.MouseLeave:Connect(function()
+                    if not (multi and sel[o] or (sel == o)) then
+                        Tween(ob, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+                    end
+                end)
+
+                ob.MouseButton1Click:Connect(function()
+                    if multi then
+                        sel[o] = not sel[o]
+                        ob.BackgroundColor3 = sel[o] and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(40, 40, 40)
+                    else
+                        sel = o
+                        closePopup()
+                    end
+                    upd_l()
+                    if c then c(sel) end
+                end)
+            end
+
+            popupList.CanvasSize = UDim2.new(0, 0, 0, pll.AbsoluteContentSize.Y)
+            local popupHeight = math.min(#values * 30 + 10, 200)
+            Tween(popup, {0.25, Enum.EasingStyle.Quint}, {Size = UDim2.new(0, 180, 0, popupHeight)})
+            Tween(ic, {0.25, Enum.EasingStyle.Quint}, {Rotation = 180})
+        end
+
+        dropBtn.MouseButton1Click:Connect(function()
+            if op then closePopup() else openPopup() end
+        end)
+
+        -- Close popup when clicking outside
+        UserInputService.InputBegan:Connect(function(input)
+            if op and input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local mousePos = input.Position
+                local popupPos = popup.AbsolutePosition
+                local popupSize = popup.AbsoluteSize
+                local btnPos = dropBtn.AbsolutePosition
+                local btnSize = dropBtn.AbsoluteSize
+
+                local inPopup = mousePos.X >= popupPos.X and mousePos.X <= popupPos.X + popupSize.X and
+                                mousePos.Y >= popupPos.Y and mousePos.Y <= popupPos.Y + popupSize.Y
+                local inBtn = mousePos.X >= btnPos.X and mousePos.X <= btnPos.X + btnSize.X and
+                              mousePos.Y >= btnPos.Y and mousePos.Y <= btnPos.Y + btnSize.Y
+
+                if not inPopup and not inBtn then
+                    closePopup()
                 end
-                Tween(f, {0.4, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 45 + (#values * 32) + 10)})
-                Tween(ic, {0.4, Enum.EasingStyle.Quint}, {Rotation = 180})
-            else
-                Tween(f, {0.3, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 45)})
-                Tween(ic, {0.3, Enum.EasingStyle.Quint}, {Rotation = 0})
             end
         end)
 
-        local dropFuncs = {}
+        local dropFuncs = {Type = "Dropdown", Value = sel}
         function dropFuncs:OnChanged(callback) c = callback end
-        function dropFuncs:SetValue(v) sel = v; upd_l(); if c then c(sel) end end
+        function dropFuncs:SetValue(v)
+            if type(v) == "table" then
+                -- Refresh dropdown values
+                values = v
+            else
+                sel = v
+            end
+            upd_l()
+            if c then c(sel) end
+        end
+        Spiem.Options[idx] = dropFuncs
         return dropFuncs
     end
 
@@ -572,5 +649,245 @@ function Spiem:AddTab(options)
 
     return tab
 end
+
+-- ============================================
+-- SAVE MANAGER
+-- ============================================
+local HttpService = game:GetService("HttpService")
+
+local SaveManager = {}
+SaveManager.Folder = "SpiemSettings"
+SaveManager.Ignore = {}
+SaveManager.Options = Spiem.Options
+
+SaveManager.Parser = {
+    Toggle = {
+        Save = function(idx, object) return { type = "Toggle", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+    Slider = {
+        Save = function(idx, object) return { type = "Slider", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+    Dropdown = {
+        Save = function(idx, object) return { type = "Dropdown", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+    Input = {
+        Save = function(idx, object) return { type = "Input", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+    Keybind = {
+        Save = function(idx, object) return { type = "Keybind", idx = idx, value = object.Value } end,
+        Load = function(idx, data) if SaveManager.Options[idx] then SaveManager.Options[idx]:SetValue(data.value) end end,
+    },
+}
+
+function SaveManager:SetLibrary(library)
+    self.Library = library
+    self.Options = library.Options
+end
+
+function SaveManager:SetFolder(folder)
+    self.Folder = folder
+    self:BuildFolderTree()
+end
+
+function SaveManager:SetIgnoreIndexes(list)
+    for _, key in next, list do self.Ignore[key] = true end
+end
+
+function SaveManager:IgnoreThemeSettings()
+    self:SetIgnoreIndexes({"InterfaceTheme", "MenuKeybind", "SaveManager_ConfigList", "SaveManager_ConfigName"})
+end
+
+function SaveManager:BuildFolderTree()
+    local paths = {self.Folder, self.Folder .. "/settings"}
+    for i = 1, #paths do
+        if not isfolder(paths[i]) then makefolder(paths[i]) end
+    end
+end
+
+function SaveManager:Save(name)
+    if not name or name:gsub(" ", "") == "" then return false, "Invalid name" end
+    local fullPath = self.Folder .. "/settings/" .. name .. ".json"
+    local data = {objects = {}}
+
+    for idx, option in pairs(self.Options) do
+        local optType = option.Type
+        if self.Parser[optType] and not self.Ignore[idx] then
+            table.insert(data.objects, self.Parser[optType].Save(idx, option))
+        end
+    end
+
+    local success, encoded = pcall(HttpService.JSONEncode, HttpService, data)
+    if not success then return false, "Encoding error" end
+    writefile(fullPath, encoded)
+    return true
+end
+
+function SaveManager:Load(name)
+    if not name then return false, "No config selected" end
+    local file = self.Folder .. "/settings/" .. name .. ".json"
+    if not isfile(file) then return false, "File not found" end
+
+    local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
+    if not success then return false, "Decode error" end
+
+    for _, option in pairs(decoded.objects) do
+        if self.Parser[option.type] then
+            task.spawn(function() self.Parser[option.type].Load(option.idx, option) end)
+        end
+    end
+    return true
+end
+
+function SaveManager:RefreshConfigList()
+    local list = listfiles(self.Folder .. "/settings")
+    local out = {}
+    for i = 1, #list do
+        local file = list[i]
+        if file:sub(-5) == ".json" then
+            local name = file:match("([^/\\]+)%.json$")
+            if name and name ~= "options" then table.insert(out, name) end
+        end
+    end
+    return out
+end
+
+function SaveManager:LoadAutoloadConfig()
+    local autoloadPath = self.Folder .. "/settings/autoload.txt"
+    if isfile(autoloadPath) then
+        local name = readfile(autoloadPath)
+        local success, err = self:Load(name)
+        if success then
+            self.Library:Notify({Title = "Config", Content = "Auto-loaded: " .. name, Duration = 3})
+        end
+    end
+end
+
+function SaveManager:BuildConfigSection(tab)
+    assert(self.Library, "SaveManager.Library must be set!")
+
+    tab:AddParagraph({Title = "Config System", Content = "Save and load your settings."})
+
+    tab:AddInput("SaveManager_ConfigName", {Title = "Config Name", Placeholder = "Enter a name..."})
+
+    local configList = tab:AddDropdown("SaveManager_ConfigList", {
+        Title = "Config List",
+        Values = self:RefreshConfigList(),
+        Multi = false
+    })
+
+    tab:AddButton({
+        Title = "Save Config",
+        Callback = function()
+            local name = self.Options.SaveManager_ConfigName and self.Options.SaveManager_ConfigName.Value
+            if not name or name == "" then
+                return self.Library:Notify({Title = "Error", Content = "Please enter a config name!", Duration = 3})
+            end
+            local success, err = self:Save(name)
+            if success then
+                self.Library:Notify({Title = "Success", Content = "Config saved: " .. name, Duration = 3})
+                configList:SetValue(self:RefreshConfigList())
+            else
+                self.Library:Notify({Title = "Error", Content = err, Duration = 3})
+            end
+        end
+    })
+
+    tab:AddButton({
+        Title = "Load Config",
+        Callback = function()
+            local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
+            if not name then
+                return self.Library:Notify({Title = "Error", Content = "Please select a config!", Duration = 3})
+            end
+            local success, err = self:Load(name)
+            if success then
+                self.Library:Notify({Title = "Success", Content = "Config loaded: " .. name, Duration = 3})
+            else
+                self.Library:Notify({Title = "Error", Content = err, Duration = 3})
+            end
+        end
+    })
+
+    tab:AddButton({
+        Title = "Set as Autoload",
+        Callback = function()
+            local name = self.Options.SaveManager_ConfigList and self.Options.SaveManager_ConfigList.Value
+            if name then
+                writefile(self.Folder .. "/settings/autoload.txt", name)
+                self.Library:Notify({Title = "Success", Content = name .. " will auto-load!", Duration = 3})
+            end
+        end
+    })
+
+    tab:AddButton({
+        Title = "Refresh List",
+        Callback = function()
+            configList:SetValue(self:RefreshConfigList())
+            self.Library:Notify({Title = "Success", Content = "List refreshed!", Duration = 2})
+        end
+    })
+
+    self:SetIgnoreIndexes({"SaveManager_ConfigList", "SaveManager_ConfigName"})
+end
+
+SaveManager:BuildFolderTree()
+
+-- ============================================
+-- INTERFACE MANAGER
+-- ============================================
+local InterfaceManager = {}
+InterfaceManager.Folder = "SpiemSettings"
+InterfaceManager.Settings = {
+    MenuKeybind = "LeftControl"
+}
+
+function InterfaceManager:SetLibrary(library)
+    self.Library = library
+end
+
+function InterfaceManager:SetFolder(folder)
+    self.Folder = folder
+    if not isfolder(folder) then makefolder(folder) end
+end
+
+function InterfaceManager:SaveSettings()
+    writefile(self.Folder .. "/interface.json", HttpService:JSONEncode(self.Settings))
+end
+
+function InterfaceManager:LoadSettings()
+    local path = self.Folder .. "/interface.json"
+    if isfile(path) then
+        local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(path))
+        if success then
+            for k, v in pairs(decoded) do self.Settings[k] = v end
+        end
+    end
+end
+
+function InterfaceManager:BuildInterfaceSection(tab)
+    assert(self.Library, "InterfaceManager.Library must be set!")
+    self:LoadSettings()
+
+    tab:AddParagraph({Title = "Interface Settings", Content = "Menu keybind and other settings."})
+
+    tab:AddKeybind("MenuKeybind", {
+        Title = "Menu Toggle Key",
+        Default = self.Settings.MenuKeybind,
+        Callback = function(key)
+            self.Settings.MenuKeybind = key
+            self.Library.MinimizeKey = Enum.KeyCode[key]
+            self:SaveSettings()
+            self.Library:Notify({Title = "Settings", Content = "Menu key: " .. key, Duration = 2})
+        end
+    })
+end
+
+-- Attach to Spiem
+Spiem.SaveManager = SaveManager
+Spiem.InterfaceManager = InterfaceManager
 
 return Spiem

@@ -1,7 +1,7 @@
 --[[
-    SpiemUI V1.3.1 - Advanced Universal Script
+    SpiemUI V1.4 - Advanced Universal Script
     Comprehensive script for any Roblox game.
-    Features: Player mods, Visuals, Teleport, Anti-AFK, and more.
+    Now with SaveManager & InterfaceManager support!
 ]]
 
 local url = "https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua?v=" .. tick()
@@ -12,13 +12,14 @@ local LP = Players.LocalPlayer
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+
+-- Get Managers from Library
+local SaveManager = Spiem.SaveManager
+local InterfaceManager = Spiem.InterfaceManager
 
 -- Configuration
 local Config = {
-    -- Player
     WalkSpeed = 16,
     JumpPower = 50,
     Gravity = 196.2,
@@ -26,21 +27,29 @@ local Config = {
     Noclip = false,
     Fly = false,
     FlySpeed = 50,
-    
-    -- Visuals
     ESP = false,
     ESPColor = Color3.fromRGB(0, 255, 120),
     Fullbright = false,
     NoFog = false,
-    
-    -- Misc
     AntiAFK = true,
     ClickTP = false
 }
 
+-- Setup Managers
+SaveManager:SetLibrary(Spiem)
+InterfaceManager:SetLibrary(Spiem)
+
+-- Set folders (can be per-game)
+local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name:gsub("[^%w]", "")
+SaveManager:SetFolder("SpiemHub/" .. gameName)
+InterfaceManager:SetFolder("SpiemHub")
+
+-- Ignore interface settings from game configs
+SaveManager:IgnoreThemeSettings()
+
 -- Window Creation
 local Window = Spiem.new({
-    Title = "Spiem Universal | " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+    Title = "Spiem Universal | " .. LP.Name,
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
@@ -68,26 +77,22 @@ do
         Content = "Karakterinizin hız ve zıplama değerlerini ayarlayın."
     })
 
-    local SpeedSlider = Tabs.Player:AddSlider("WalkSpeed", {
+    Tabs.Player:AddSlider("WalkSpeed", {
         Title = "Yürüme Hızı",
         Min = 16,
         Max = 500,
         Default = 16,
         Rounding = 1,
-        Callback = function(v)
-            Config.WalkSpeed = v
-        end
+        Callback = function(v) Config.WalkSpeed = v end
     })
 
-    local JumpSlider = Tabs.Player:AddSlider("JumpPower", {
+    Tabs.Player:AddSlider("JumpPower", {
         Title = "Zıplama Gücü",
         Min = 50,
         Max = 500,
         Default = 50,
         Rounding = 1,
-        Callback = function(v)
-            Config.JumpPower = v
-        end
+        Callback = function(v) Config.JumpPower = v end
     })
 
     Tabs.Player:AddSlider("Gravity", {
@@ -107,7 +112,7 @@ do
         Default = false,
         Callback = function(v)
             Config.InfiniteJump = v
-            Spiem:Notify({Title = "Sınırsız Zıplama", Content = v and "Aktif edildi!" or "Devre dışı.", Duration = 2})
+            Spiem:Notify({Title = "Sınırsız Zıplama", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
         end
     })
 
@@ -116,7 +121,7 @@ do
         Default = false,
         Callback = function(v)
             Config.Noclip = v
-            Spiem:Notify({Title = "Noclip", Content = v and "Aktif! Duvarlarda gezebilirsin." or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Noclip", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
         end
     })
 
@@ -125,16 +130,14 @@ do
         Default = false,
         Callback = function(v)
             Config.Fly = v
-            if not v then
-                if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = LP.Character.HumanoidRootPart
-                    local bv = hrp:FindFirstChildOfClass("BodyVelocity")
-                    local bg = hrp:FindFirstChildOfClass("BodyGyro")
-                    if bv then bv:Destroy() end
-                    if bg then bg:Destroy() end
-                end
+            if not v and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = LP.Character.HumanoidRootPart
+                local bv = hrp:FindFirstChild("SpiemBV")
+                local bg = hrp:FindFirstChild("SpiemBG")
+                if bv then bv:Destroy() end
+                if bg then bg:Destroy() end
             end
-            Spiem:Notify({Title = "Fly", Content = v and "Uçuş modu aktif! WASD + Space/Shift" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "Fly", Content = v and "WASD + Space/Shift ile uç!" or "Kapatıldı.", Duration = 2})
         end
     })
 
@@ -144,17 +147,14 @@ do
         Max = 300,
         Default = 50,
         Rounding = 1,
-        Callback = function(v)
-            Config.FlySpeed = v
-        end
+        Callback = function(v) Config.FlySpeed = v end
     })
 
     Tabs.Player:AddButton({
         Title = "Karakteri Yenile",
-        Description = "Karakterinizi sıfırlar",
         Callback = function()
             LP.Character:FindFirstChildOfClass("Humanoid").Health = 0
-            Spiem:Notify({Title = "Karakter", Content = "Karakter yenileniyor...", Duration = 2})
+            Spiem:Notify({Title = "Karakter", Content = "Yenileniyor...", Duration = 2})
         end
     })
 end
@@ -163,45 +163,34 @@ end
 -- GÖRSEL (Visuals) TAB
 -- ============================================
 do
-    Tabs.Visuals:AddParagraph({
-        Title = "ESP Ayarları",
-        Content = "Diğer oyuncuları ve nesneleri görmenizi kolaylaştırır."
-    })
+    Tabs.Visuals:AddParagraph({Title = "ESP Ayarları", Content = "Diğer oyuncuları görmenizi kolaylaştırır."})
 
     Tabs.Visuals:AddToggle("ESPToggle", {
         Title = "Oyuncu ESP",
         Default = false,
         Callback = function(v)
             Config.ESP = v
-            Spiem:Notify({Title = "ESP", Content = v and "Oyuncuları görebilirsin!" or "Kapatıldı.", Duration = 2})
+            Spiem:Notify({Title = "ESP", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
         end
     })
 
     Tabs.Visuals:AddColorpicker("ESPColor", {
         Title = "ESP Rengi",
         Default = Color3.fromRGB(0, 255, 120),
-        Callback = function(clr)
-            Config.ESPColor = clr
-        end
+        Callback = function(clr) Config.ESPColor = clr end
     })
 
     Tabs.Visuals:AddToggle("Fullbright", {
-        Title = "Fullbright (Aydınlık)",
+        Title = "Fullbright",
         Default = false,
         Callback = function(v)
             Config.Fullbright = v
             if v then
-                Lighting.Brightness = 2
-                Lighting.ClockTime = 14
-                Lighting.FogEnd = 100000
-                Lighting.GlobalShadows = false
-                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+                Lighting.Brightness, Lighting.ClockTime, Lighting.FogEnd, Lighting.GlobalShadows = 2, 14, 100000, false
             else
-                Lighting.Brightness = 1
-                Lighting.GlobalShadows = true
-                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+                Lighting.Brightness, Lighting.GlobalShadows = 1, true
             end
-            Spiem:Notify({Title = "Fullbright", Content = v and "Harita aydınlatıldı!" or "Normal ışık.", Duration = 2})
+            Spiem:Notify({Title = "Fullbright", Content = v and "Aktif!" or "Kapatıldı.", Duration = 2})
         end
     })
 
@@ -211,7 +200,7 @@ do
         Callback = function(v)
             Config.NoFog = v
             Lighting.FogEnd = v and 100000 or 1000
-            Spiem:Notify({Title = "Sis", Content = v and "Sis kaldırıldı!" or "Sis geri geldi.", Duration = 2})
+            Spiem:Notify({Title = "Sis", Content = v and "Kaldırıldı!" or "Geri geldi.", Duration = 2})
         end
     })
 
@@ -223,7 +212,6 @@ do
         Callback = function(v)
             local times = {Sabah = 6, ["Öğlen"] = 12, ["Akşam"] = 18, Gece = 0}
             Lighting.ClockTime = times[v] or 12
-            Spiem:Notify({Title = "Zaman", Content = v .. " olarak ayarlandı.", Duration = 2})
         end
     })
 end
@@ -232,10 +220,7 @@ end
 -- TELEPORT TAB
 -- ============================================
 do
-    Tabs.Teleport:AddParagraph({
-        Title = "Teleport Özellikleri",
-        Content = "Oyuncuların yanına veya belirli konumlara ışınlanın."
-    })
+    Tabs.Teleport:AddParagraph({Title = "Teleport", Content = "Oyuncuların yanına veya koordinatlara ışınlanın."})
 
     Tabs.Teleport:AddToggle("ClickTP", {
         Title = "Tıkla Işınlan (Ctrl + Click)",
@@ -246,7 +231,6 @@ do
         end
     })
 
-    -- Player Teleport Dropdown
     local playerNames = {}
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LP then table.insert(playerNames, p.Name) end
@@ -262,8 +246,6 @@ do
             if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
                 LP.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
                 Spiem:Notify({Title = "Teleport", Content = v .. " oyuncusuna ışınlandın!", Duration = 2})
-            else
-                Spiem:Notify({Title = "Hata", Content = "Oyuncu bulunamadı!", Duration = 2})
             end
         end
     })
@@ -272,7 +254,7 @@ do
         Title = "Spawn'a Işınlan",
         Callback = function()
             LP.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-            Spiem:Notify({Title = "Teleport", Content = "Spawn noktasına ışınlandın.", Duration = 2})
+            Spiem:Notify({Title = "Teleport", Content = "Spawn'a ışınlandın.", Duration = 2})
         end
     })
 
@@ -285,7 +267,7 @@ do
                 local x, y, z = tonumber(coords[1]), tonumber(coords[2]), tonumber(coords[3])
                 if x and y and z then
                     LP.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
-                    Spiem:Notify({Title = "Teleport", Content = "Koordinata ışınlandın: " .. v, Duration = 2})
+                    Spiem:Notify({Title = "Teleport", Content = "Koordinata ışınlandın!", Duration = 2})
                 end
             end
         end
@@ -296,10 +278,7 @@ end
 -- DİĞER (Misc) TAB
 -- ============================================
 do
-    Tabs.Misc:AddParagraph({
-        Title = "Ek Özellikler",
-        Content = "Anti-AFK, FPS gösterimi ve diğer yardımcı araçlar."
-    })
+    Tabs.Misc:AddParagraph({Title = "Ek Özellikler", Content = "Anti-AFK, Sunucu araçları ve daha fazlası."})
 
     Tabs.Misc:AddToggle("AntiAFK", {
         Title = "Anti-AFK",
@@ -314,9 +293,7 @@ do
         Title = "Tüm Oyuncuları Listele",
         Callback = function()
             local list = ""
-            for _, p in pairs(Players:GetPlayers()) do
-                list = list .. p.Name .. "\n"
-            end
+            for _, p in pairs(Players:GetPlayers()) do list = list .. p.Name .. "\n" end
             Spiem:Notify({Title = "Oyuncular (" .. #Players:GetPlayers() .. ")", Content = list, Duration = 8})
         end
     })
@@ -326,27 +303,26 @@ do
         Callback = function()
             local info = "Oyun: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
             info = info .. "\nPlaceId: " .. game.PlaceId
-            info = info .. "\nJobId: " .. game.JobId
-            info = info .. "\nOyuncu Sayısı: " .. #Players:GetPlayers()
-            Spiem:Notify({Title = "Sunucu Bilgisi", Content = info, Duration = 10})
+            info = info .. "\nOyuncu: " .. #Players:GetPlayers()
+            Spiem:Notify({Title = "Sunucu", Content = info, Duration = 10})
         end
     })
 
     Tabs.Misc:AddButton({
-        Title = "Rejoin (Yeniden Bağlan)",
-        Description = "Aynı sunucuya tekrar bağlanır",
+        Title = "Rejoin",
+        Description = "Aynı sunucuya tekrar bağlan",
         Callback = function()
-            Spiem:Notify({Title = "Rejoin", Content = "Yeniden bağlanılıyor...", Duration = 2})
+            Spiem:Notify({Title = "Rejoin", Content = "Bağlanılıyor...", Duration = 2})
             task.wait(1)
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LP)
         end
     })
 
     Tabs.Misc:AddButton({
-        Title = "Server Hop (Sunucu Değiştir)",
-        Description = "Başka bir sunucuya atlar",
+        Title = "Server Hop",
+        Description = "Başka sunucuya atla",
         Callback = function()
-            Spiem:Notify({Title = "Server Hop", Content = "Yeni sunucu aranıyor...", Duration = 2})
+            Spiem:Notify({Title = "Server Hop", Content = "Sunucu aranıyor...", Duration = 2})
             task.wait(1)
             local servers = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
             for _, server in pairs(servers.data) do
@@ -361,29 +337,19 @@ do
 end
 
 -- ============================================
--- AYARLAR (Settings) TAB
+-- AYARLAR (Settings) TAB - Config & Interface
 -- ============================================
 do
-    Tabs.Settings:AddParagraph({
-        Title = "Script Ayarları",
-        Content = "Menü tuşu ve diğer yapılandırmalar."
-    })
+    -- Interface Section
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 
-    Tabs.Settings:AddKeybind("MenuToggle", {
-        Title = "Menü Aç/Kapat Tuşu",
-        Default = "LeftControl",
-        Callback = function(key)
-            Window.MinimizeKey = Enum.KeyCode[key]
-            Spiem:Notify({Title = "Tuş Atandı", Content = "Menü tuşu: " .. key, Duration = 2})
-        end
-    })
+    -- Config Section
+    SaveManager:BuildConfigSection(Tabs.Settings)
 
     Tabs.Settings:AddButton({
         Title = "Scripti Kapat",
         Description = "Tüm özellikleri kapatır ve menüyü siler",
-        Callback = function()
-            Window:Destroy()
-        end
+        Callback = function() Window:Destroy() end
     })
 
     Tabs.Settings:AddParagraph({
@@ -395,24 +361,18 @@ end
 -- ============================================
 -- LOGIC LOOPS
 -- ============================================
-
--- Player Stats Loop
 RS.RenderStepped:Connect(function()
     if LP.Character and LP.Character:FindFirstChild("Humanoid") then
         LP.Character.Humanoid.WalkSpeed = Config.WalkSpeed
         LP.Character.Humanoid.JumpPower = Config.JumpPower
     end
 
-    -- Noclip Logic
     if Config.Noclip and LP.Character then
         for _, part in pairs(LP.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
+            if part:IsA("BasePart") then part.CanCollide = false end
         end
     end
 
-    -- Fly Logic
     if Config.Fly and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = LP.Character.HumanoidRootPart
         local bv = hrp:FindFirstChild("SpiemBV") or Instance.new("BodyVelocity", hrp)
@@ -436,14 +396,12 @@ RS.RenderStepped:Connect(function()
     end
 end)
 
--- Infinite Jump
 UIS.JumpRequest:Connect(function()
     if Config.InfiniteJump and LP.Character and LP.Character:FindFirstChild("Humanoid") then
         LP.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- Click Teleport
 UIS.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if Config.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 and UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
@@ -454,7 +412,6 @@ UIS.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Anti-AFK
 LP.Idled:Connect(function()
     if Config.AntiAFK then
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
@@ -468,19 +425,15 @@ ESPFolder.Name = "SpiemESP"
 
 local function CreateESP(player)
     if player == LP then return end
-    
     local highlight = Instance.new("Highlight")
     highlight.Name = player.Name .. "_ESP"
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0
+    highlight.FillTransparency, highlight.OutlineTransparency = 0.5, 0
     highlight.Parent = ESPFolder
     
     RS.RenderStepped:Connect(function()
         if player.Character and Config.ESP then
-            highlight.Adornee = player.Character
-            highlight.Enabled = true
-            highlight.FillColor = Config.ESPColor
-            highlight.OutlineColor = Config.ESPColor
+            highlight.Adornee, highlight.Enabled = player.Character, true
+            highlight.FillColor, highlight.OutlineColor = Config.ESPColor, Config.ESPColor
         else
             highlight.Enabled = false
         end
@@ -490,9 +443,7 @@ end
 for _, p in pairs(Players:GetPlayers()) do CreateESP(p) end
 Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Wait(); CreateESP(p) end)
 
--- Final Notification
-Spiem:Notify({
-    Title = "Hazır!",
-    Content = "Tüm özellikler aktif. İyi eğlenceler!",
-    Duration = 3
-})
+-- Load autoload config if exists
+SaveManager:LoadAutoloadConfig()
+
+Spiem:Notify({Title = "Hazır!", Content = "Tüm özellikler aktif. İyi eğlenceler!", Duration = 3})
