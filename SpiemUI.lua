@@ -68,16 +68,24 @@ function Spiem:Notify(options)
     local s = Instance.new("UIStroke", frame)
     s.Color, s.Transparency = Color3.fromRGB(70, 70, 70), 0.5
 
+    -- Notification icon on the right
+    local icon = Instance.new("ImageLabel", frame)
+    icon.BackgroundTransparency = 1
+    icon.Position = UDim2.new(1, -38, 0, 10)
+    icon.Size = UDim2.new(0, 24, 0, 24)
+    icon.Image = "rbxassetid://108404950895534"
+    icon.ImageColor3 = Color3.fromRGB(0, 150, 255)
+
     local t = Instance.new("TextLabel", frame)
-    t.BackgroundTransparency, t.Position, t.Size, t.Font = 1, UDim2.new(0, 15, 0, 8), UDim2.new(1, -30, 0, 18), Enum.Font.BuilderSansBold
+    t.BackgroundTransparency, t.Position, t.Size, t.Font = 1, UDim2.new(0, 15, 0, 8), UDim2.new(1, -55, 0, 18), Enum.Font.BuilderSansBold
     t.Text, t.TextColor3, t.TextSize, t.TextXAlignment = title, Color3.fromRGB(240, 240, 240), 14, Enum.TextXAlignment.Left
 
     local c = Instance.new("TextLabel", frame)
-    c.BackgroundTransparency, c.Position, c.Size, c.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -30, 0, 0), Enum.Font.BuilderSans
+    c.BackgroundTransparency, c.Position, c.Size, c.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -55, 0, 0), Enum.Font.BuilderSans
     c.Text, c.TextColor3, c.TextSize, c.TextXAlignment, c.TextWrapped = content, Color3.fromRGB(180, 180, 180), 12, Enum.TextXAlignment.Left, true
 
     local height = 40 + c.TextBounds.Y
-    c.Size = UDim2.new(1, -30, 0, c.TextBounds.Y)
+    c.Size = UDim2.new(1, -55, 0, c.TextBounds.Y)
     
     -- Smooth open animation
     Tween(frame, {0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, height)})
@@ -86,6 +94,7 @@ function Spiem:Notify(options)
         -- Smooth close: slide right + fade out
         Tween(frame, {0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In}, {Position = UDim2.new(1, 50, 0, 0)})
         Tween(s, {0.3, Enum.EasingStyle.Quint}, {Transparency = 1})
+        Tween(icon, {0.25, Enum.EasingStyle.Quint}, {ImageTransparency = 1})
         task.wait(0.15)
         Tween(t, {0.25, Enum.EasingStyle.Quint}, {TextTransparency = 1})
         Tween(c, {0.25, Enum.EasingStyle.Quint}, {TextTransparency = 1})
@@ -260,9 +269,9 @@ function Spiem:AddTab(options)
     Indicator.BackgroundTransparency = 1
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
     
-    -- Tab button stroke (gray border for selected state)
+    -- Tab button stroke (gray border - visible by default for all tabs)
     local BTNStroke = Instance.new("UIStroke", BTN)
-    BTNStroke.Color, BTNStroke.Transparency = Color3.fromRGB(70, 70, 70), 1
+    BTNStroke.Color, BTNStroke.Transparency = Color3.fromRGB(55, 55, 55), 0.6
 
     local Page = Instance.new("ScrollingFrame", Hub.PageContainer)
     Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 6
@@ -296,14 +305,14 @@ function Spiem:AddTab(options)
         -- Check if this is the first tab selection (no previous tab)
         local isFirstSelection = oldTab == nil
 
-        -- Deselect all buttons and hide their strokes
+        -- Deselect all buttons and reset their strokes to default state
         for _, t in pairs(Hub.Tabs) do
             -- Deselect button styling
             Tween(t.Button, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
             if ind then Tween(ind, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
             local stroke = t.Button:FindFirstChildOfClass("UIStroke")
-            if stroke then Tween(stroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 1}) end
+            if stroke then Tween(stroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.6, Color = Color3.fromRGB(55, 55, 55)}) end
         end
         
         if isFirstSelection then
@@ -347,10 +356,10 @@ function Spiem:AddTab(options)
             end)
         end
         
-        -- Select button styling with smooth transition + stroke
+        -- Select button styling with smooth transition + stroke (more visible)
         Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
-        Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.5})
+        Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.3, Color = Color3.fromRGB(75, 75, 75)})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
