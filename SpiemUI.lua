@@ -259,6 +259,10 @@ function Spiem:AddTab(options)
     Indicator.BackgroundColor3, Indicator.Position, Indicator.Size = Color3.fromRGB(0, 120, 255), UDim2.new(0, 2, 0.5, -8), UDim2.new(0, 3, 0, 16)
     Indicator.BackgroundTransparency = 1
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+    
+    -- Tab button stroke (gray border for selected state)
+    local BTNStroke = Instance.new("UIStroke", BTN)
+    BTNStroke.Color, BTNStroke.Transparency = Color3.fromRGB(70, 70, 70), 1
 
     local Page = Instance.new("ScrollingFrame", Hub.PageContainer)
     Page.BackgroundTransparency, Page.Size, Page.Visible, Page.ScrollBarThickness = 1, UDim2.new(1, 0, 1, 0), false, 6
@@ -292,19 +296,14 @@ function Spiem:AddTab(options)
         -- Check if this is the first tab selection (no previous tab)
         local isFirstSelection = oldTab == nil
 
-        -- Animate OUT old tabs with fade + slide (skip if first selection)
+        -- Deselect all buttons and hide their strokes
         for _, t in pairs(Hub.Tabs) do
-            if t.Page.Parent.Visible and not isFirstSelection then
-                -- Fade out and slide left
-                Tween(t.Page.Parent, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
-                    GroupTransparency = 1,
-                    Position = UDim2.new(-0.05, 0, 0, 0)
-                })
-            end
             -- Deselect button styling
-            Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            Tween(t.Button, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
-            if ind then Tween(ind, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
+            if ind then Tween(ind, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
+            local stroke = t.Button:FindFirstChildOfClass("UIStroke")
+            if stroke then Tween(stroke, {0.18, Enum.EasingStyle.Quint}, {Transparency = 1}) end
         end
         
         if isFirstSelection then
@@ -313,32 +312,45 @@ function Spiem:AddTab(options)
             Page.Parent.GroupTransparency = 0
             Page.Parent.Visible = true
         else
-            -- Wait for old tab to fade out, then animate in new tab
-            task.delay(0.15, function()
-                -- Hide all other tabs
+            -- Crossfade animation - both tabs animate simultaneously for smoothness
+            -- Prepare new tab (start invisible and slightly to the right)
+            Page.Parent.Position = UDim2.new(0.03, 0, 0, 0)
+            Page.Parent.GroupTransparency = 1
+            Page.Parent.Visible = true
+            
+            -- Animate OUT old tabs and IN new tab at the same time
+            for _, t in pairs(Hub.Tabs) do
+                if t.Page.Parent.Visible and t.Page ~= Page then
+                    -- Fade out old tab (slide slightly left)
+                    Tween(t.Page.Parent, {0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                        GroupTransparency = 1,
+                        Position = UDim2.new(-0.03, 0, 0, 0)
+                    })
+                end
+            end
+            
+            -- Animate IN new tab immediately (no delay)
+            Tween(Page.Parent, {0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                GroupTransparency = 0,
+                Position = UDim2.new(0, 0, 0, 0)
+            })
+            
+            -- Clean up old tabs after animation completes
+            task.delay(0.22, function()
                 for _, t in pairs(Hub.Tabs) do
                     if t.Page ~= Page then
                         t.Page.Parent.Visible = false
                         t.Page.Parent.Position = UDim2.new(0, 0, 0, 0)
+                        t.Page.Parent.GroupTransparency = 0
                     end
                 end
-                
-                -- Prepare new tab for entrance
-                Page.Parent.Position = UDim2.new(0.05, 0, 0, 0)
-                Page.Parent.GroupTransparency = 1
-                Page.Parent.Visible = true
-                
-                -- Animate IN new tab with fade + slide
-                Tween(Page.Parent, {0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
-                    GroupTransparency = 0,
-                    Position = UDim2.new(0, 0, 0, 0)
-                })
             end)
         end
         
-        -- Select button styling with smooth transition
-        Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
-        Tween(Indicator, {0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
+        -- Select button styling with smooth transition + stroke
+        Tween(BTN, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(Indicator, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
+        Tween(BTNStroke, {0.18, Enum.EasingStyle.Quint}, {Transparency = 0.5})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
