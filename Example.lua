@@ -134,8 +134,9 @@ do
         end
     })
     
-    -- Button: Kill Aura
-    local killAuraButton = PlayerTab:AddButton({
+    -- Button: Kill Aura (Düzeltilmiş tanım)
+    local killAuraButton
+    killAuraButton = PlayerTab:AddButton({
         Title = "Kill Aura",
         Description = "Status: Inactive",
         Callback = function()
@@ -157,6 +158,27 @@ do
         Multi = false,
         Callback = function(value)
             print("Attack mode changed to:", value)
+        end
+    })
+    -- Section: Timer (UI Update Test)
+    PlayerTab:AddSection("Timer")
+
+    local timerPara = PlayerTab:AddParagraph({
+        Title = "Countdown Timer",
+        Content = "Click 'Start' to begin the countdown (1-30)."
+    })
+
+    PlayerTab:AddButton({
+        Title = "Start Countdown",
+        Description = "Updates the paragraph content every second",
+        Callback = function()
+            task.spawn(function()
+                for i = 1, 30 do
+                    timerPara:SetContent("Current value: " .. i .. " seconds")
+                    task.wait(1)
+                end
+                timerPara:SetContent("Timer finished! (30 seconds)")
+            end)
         end
     })
 end
