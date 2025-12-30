@@ -222,7 +222,6 @@ local SelectedPlayers = {}
 local TPPlayerDropdown
 
 do
-    Tabs.Teleport:AddSection("Player Selection")
 
     Tabs.Teleport:AddSection("Utilities")
 

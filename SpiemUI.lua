@@ -348,15 +348,19 @@ function Spiem:AddTab(options)
         b.BackgroundTransparency, b.Size, b.Text = 1, UDim2.new(1, 0, 1, 0), ""
         
         local lt = Instance.new("TextLabel", f)
-        lt.BackgroundTransparency, lt.Position, lt.Size, lt.Font = 1, UDim2.new(0, 15, 0, desc and 8 or 0), UDim2.new(1, -30, 0, 24), Enum.Font.BuilderSansMedium
+        lt.BackgroundTransparency, lt.Position, lt.Size, lt.Font = 1, UDim2.new(0, 15, 0, desc and 8 or 0), UDim2.new(1, -60, 0, 24), Enum.Font.BuilderSansMedium
         lt.Text, lt.TextColor3, lt.TextSize, lt.TextXAlignment = t, Color3.fromRGB(230, 230, 230), 14, Enum.TextXAlignment.Left
 
         local ld = nil
         if desc then
             ld = Instance.new("TextLabel", f)
-            ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -30, 0, 20), Enum.Font.BuilderSans
+            ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -60, 0, 20), Enum.Font.BuilderSans
             ld.Text, ld.TextColor3, ld.TextSize, ld.TextXAlignment = desc, Color3.fromRGB(150, 150, 150), 12, Enum.TextXAlignment.Left
         end
+
+        local ic = Instance.new("ImageLabel", f)
+        ic.BackgroundTransparency, ic.Position, ic.Size = 1, UDim2.new(1, -34, 0.5, -10), UDim2.new(0, 20, 0, 20)
+        ic.Image, ic.ImageColor3, ic.ImageTransparency = "rbxassetid://10709790644", Color3.fromRGB(180, 180, 180), 0.4
 
         b.MouseButton1Click:Connect(function()
             Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
@@ -366,9 +370,11 @@ function Spiem:AddTab(options)
         end)
         b.MouseEnter:Connect(function()
             Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(80, 80, 80)})
+            Tween(ic, {0.2, Enum.EasingStyle.Quint}, {ImageTransparency = 0, ImageColor3 = Color3.fromRGB(255, 255, 255)})
         end)
         b.MouseLeave:Connect(function()
             Tween(s, {0.2, Enum.EasingStyle.Quint}, {Color = Color3.fromRGB(65, 65, 65)})
+            Tween(ic, {0.2, Enum.EasingStyle.Quint}, {ImageTransparency = 0.4, ImageColor3 = Color3.fromRGB(180, 180, 180)})
         end)
 
         local btnFuncs = {}
@@ -378,7 +384,7 @@ function Spiem:AddTab(options)
             else
                 -- Create description label if it doesn't exist
                 ld = Instance.new("TextLabel", f)
-                ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -30, 0, 20), Enum.Font.BuilderSans
+                ld.BackgroundTransparency, ld.Position, ld.Size, ld.Font = 1, UDim2.new(0, 15, 0, 28), UDim2.new(1, -60, 0, 20), Enum.Font.BuilderSans
                 ld.Text, ld.TextColor3, ld.TextSize, ld.TextXAlignment = newDesc, Color3.fromRGB(150, 150, 150), 12, Enum.TextXAlignment.Left
                 lt.Position = UDim2.new(0, 15, 0, 8)
                 f.Size = UDim2.new(1, 0, 0, 55)
