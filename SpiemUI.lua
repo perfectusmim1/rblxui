@@ -174,11 +174,13 @@ function Spiem.new(options)
     local function ToggleMinimize()
         minimized = not minimized
         if minimized then
-            Tween(self.MainFrame, {0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), BackgroundTransparency = 1})
-            task.delay(0.2, function() if minimized then self.MainFrame.Visible = false end end)
+            -- Geliştirilmiş Kapanma Animasyonu (Hızlı ve Esnek)
+            Tween(self.MainFrame, {0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), BackgroundTransparency = 1})
+            task.delay(0.25, function() if minimized then self.MainFrame.Visible = false end end)
         else
+            -- Geliştirilmiş Açılma Animasyonu (Daha belirgin sıçrama efekti)
             self.MainFrame.Visible = true
-            Tween(self.MainFrame, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 580, 0, 460), BackgroundTransparency = 0})
+            Tween(self.MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 580, 0, 460), BackgroundTransparency = 0})
         end
     end
 
@@ -194,10 +196,15 @@ end
 function Spiem:Destroy()
     if self.ToggleConnection then self.ToggleConnection:Disconnect() end
     
-    -- Shutdown animation
-    Tween(self.MainFrame, {0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), Position = UDim2.new(0.5, -290, 0.5, 0), BackgroundTransparency = 1})
+    -- Geliştirilmiş Kapatma Animasyonu (Minimize stiliyle uyumlu ama daha vurgulu)
+    local closeTween = Tween(self.MainFrame, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
+        Size = UDim2.new(0, 580, 0, 0), 
+        BackgroundTransparency = 1
+    })
     
-    task.wait(0.3)
+    -- Nesnelerin kaybolması için hafif bekleme
+    closeTween.Completed:Wait()
+    
     self.ScreenGui:Destroy()
     if Spiem.NotifGui then Spiem.NotifGui:Destroy() end
 end
@@ -316,11 +323,11 @@ function Spiem:AddTab(options)
 
     function tab:AddSection(text)
         local f = Instance.new("Frame", Page)
-        f.BackgroundTransparency, f.Size = 1, UDim2.new(1, 0, 0, 30)
+        f.BackgroundTransparency, f.Size = 1, UDim2.new(1, 0, 0, 42) -- 30 * 1.4 = 42
         
         local l = Instance.new("TextLabel", f)
-        l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 5, 0, 10), UDim2.new(1, -5, 0, 20), Enum.Font.BuilderSansBold
-        l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = text, Color3.fromRGB(200, 200, 200), 13, Enum.TextXAlignment.Left
+        l.BackgroundTransparency, l.Position, l.Size, l.Font = 1, UDim2.new(0, 5, 0, 14), UDim2.new(1, -5, 0, 28), Enum.Font.BuilderSansBold
+        l.Text, l.TextColor3, l.TextSize, l.TextXAlignment = text, Color3.fromRGB(200, 200, 200), 14, Enum.TextXAlignment.Left -- TextSize bir tık artırıldı
 
         local line = Instance.new("Frame", f)
         line.BackgroundColor3, line.Position, line.Size = Color3.fromRGB(80, 80, 80), UDim2.new(0, 5, 1, 0), UDim2.new(1, -5, 0, 1)
@@ -354,7 +361,7 @@ function Spiem:AddTab(options)
 
         local ic = Instance.new("ImageLabel", f)
         ic.BackgroundTransparency, ic.Position, ic.Size = 1, UDim2.new(1, -34, 0.5, -10), UDim2.new(0, 20, 0, 20)
-        ic.Image, ic.ImageColor3, ic.ImageTransparency = "rbxassetid://131241593104274", Color3.fromRGB(180, 180, 180), 0.4
+        ic.Image, ic.ImageColor3, ic.ImageTransparency = "rbxassetid://89584446277584", Color3.fromRGB(180, 180, 180), 0.4
 
         b.MouseButton1Click:Connect(function()
             Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
