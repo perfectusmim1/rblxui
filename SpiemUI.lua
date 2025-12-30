@@ -354,7 +354,7 @@ function Spiem:AddTab(options)
 
         local ic = Instance.new("ImageLabel", f)
         ic.BackgroundTransparency, ic.Position, ic.Size = 1, UDim2.new(1, -34, 0.5, -10), UDim2.new(0, 20, 0, 20)
-        ic.Image, ic.ImageColor3, ic.ImageTransparency = "rbxassetid://132220249947851", Color3.fromRGB(180, 180, 180), 0.4
+        ic.Image, ic.ImageColor3, ic.ImageTransparency = "rbxassetid://131241593104274", Color3.fromRGB(180, 180, 180), 0.4
 
         b.MouseButton1Click:Connect(function()
             Tween(f, {0.1, Enum.EasingStyle.Quint}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
