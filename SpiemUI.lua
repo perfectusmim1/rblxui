@@ -220,37 +220,63 @@ end
 
 -- Dialog
 function Spiem:Dialog(options)
-    local overlay = Instance.new("Frame", self.ScreenGui)
-    overlay.BackgroundColor3, overlay.BackgroundTransparency, overlay.Size = Color3.fromRGB(0,0,0), 1, UDim2.new(1,0,1,0)
-    overlay.ZIndex = 10
+    -- Parent to MainFrame so it only covers the UI and follows its position
+    local overlay = Instance.new("Frame", self.MainFrame)
+    overlay.BackgroundColor3, overlay.BackgroundTransparency = Color3.fromRGB(0,0,0), 1
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.Position = UDim2.new(0, 0, 0, 0)
+    overlay.ZIndex = 100 -- Ensure it's on top of everything inside the window
     
     local d = Instance.new("Frame", overlay)
-    d.BackgroundColor3, d.Position, d.Size = Color3.fromRGB(15,15,15), UDim2.new(0.5, -150, 0.5, -80), UDim2.new(0, 300, 0, 160)
+    d.BackgroundColor3, d.Position, d.Size = Color3.fromRGB(15,15,15), UDim2.new(0.5, 0, 0.5, 0), UDim2.new(0, 300, 0, 160)
+    d.AnchorPoint = Vector2.new(0.5, 0.5) -- Using anchor point for better scaling
     Instance.new("UICorner", d).CornerRadius = UDim.new(0, 10)
+    
+    -- Hidden scale for animation
+    d.Size = UDim2.new(0, 250, 0, 130)
+    d.BackgroundTransparency = 1
+
     local s = Instance.new("UIStroke", d)
-    s.Color = Color3.fromRGB(60,60,60)
+    s.Color, s.Transparency = Color3.fromRGB(60,60,60), 1
 
     local lt = Instance.new("TextLabel", d)
     lt.BackgroundTransparency, lt.Position, lt.Size, lt.Font = 1, UDim2.new(0,15,0,10), UDim2.new(1,-30,0,25), Enum.Font.BuilderSansBold
-    lt.Text, lt.TextColor3, lt.TextSize, lt.TextXAlignment = options.Title or "Dialog", Color3.fromRGB(255,255,255), 16, Enum.TextXAlignment.Left
+    lt.Text, lt.TextColor3, lt.TextSize, lt.TextXAlignment = options.Title or "Dialog", Color3.fromRGB(240,240,240), 16, Enum.TextXAlignment.Left
+    lt.TextTransparency = 1
     
     local lc = Instance.new("TextLabel", d)
     lc.BackgroundTransparency, lc.Position, lc.Size, lc.Font = 1, UDim2.new(0,15,0,40), UDim2.new(1,-30,0,60), Enum.Font.BuilderSans
     lc.Text, lc.TextColor3, lc.TextSize, lc.TextXAlignment, lc.TextWrapped = options.Content or "", Color3.fromRGB(180,180,180), 13, Enum.TextXAlignment.Left, true
+    lc.TextTransparency = 1
 
     local bl = Instance.new("Frame", d)
     bl.BackgroundTransparency, bl.Position, bl.Size = 1, UDim2.new(0,15,1,-45), UDim2.new(1,-30,0,30)
     local bll = Instance.new("UIListLayout", bl)
     bll.FillDirection, bll.HorizontalAlignment, bll.Padding = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Right, UDim.new(0,10)
 
+    -- Opening Animation
+    Tween(overlay, {0.3, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5}) -- Darken UI
+    Tween(d, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 300, 0, 160), BackgroundTransparency = 0})
+    Tween(s, {0.3, Enum.EasingStyle.Quint}, {Transparency = 0})
+    Tween(lt, {0.3, Enum.EasingStyle.Quint}, {TextTransparency = 0})
+    Tween(lc, {0.3, Enum.EasingStyle.Quint}, {TextTransparency = 0})
+
     for _, btn in pairs(options.Buttons or {}) do
         local b = Instance.new("TextButton", bl)
         b.BackgroundColor3, b.Size, b.Font, b.Text = Color3.fromRGB(30,30,30), UDim2.new(0, 80, 1, 0), Enum.Font.BuilderSansMedium, btn.Title
-        b.TextColor3, b.TextSize = Color3.fromRGB(255,255,255), 13
+        b.TextColor3, b.TextSize, b.TextTransparency = Color3.fromRGB(255,255,255), 13, 1
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+        
+        Tween(b, {0.3, Enum.EasingStyle.Quint}, {TextTransparency = 0})
+
         b.MouseButton1Click:Connect(function()
-            if btn.Callback then btn.Callback() end
-            overlay:Destroy()
+            -- Closing Animation
+            Tween(overlay, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
+            Tween(d, {0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 250, 0, 130), BackgroundTransparency = 1})
+            task.delay(0.2, function()
+                if btn.Callback then btn.Callback() end
+                overlay:Destroy()
+            end)
         end)
     end
 end
