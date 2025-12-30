@@ -362,12 +362,12 @@ function Spiem:AddTab(options)
         Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.2, Color = Color3.fromRGB(80, 80, 80)})
     end
     BTN.MouseEnter:Connect(function()
-        if not Page.Parent.Visible then
+        if Hub.CurrentTab ~= tab then
             Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.85})
         end
     end)
     BTN.MouseLeave:Connect(function()
-        if not Page.Parent.Visible then
+        if Hub.CurrentTab ~= tab then
             Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
         end
     end)
@@ -385,7 +385,8 @@ function Spiem:AddTab(options)
             isPressed = false
             -- Scale back with elastic bounce
             Tween(BTN, {0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 34)})
-            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = Page.Parent.Visible and 0.5 or 1})
+            -- Guarantee correct transparency based on selection state
+            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = (Hub.CurrentTab == tab) and 0.3 or 1})
         end
     end)
     BTN.MouseLeave:Connect(function()
