@@ -1,21 +1,15 @@
---[[
-    SpiemUI Library V1.3
-    A premium, fluent Roblox UI library for perfectusmim1/rblxui.
-    Features: Notifications, Sliders, Multi-Dropdowns, Keybinds, Colorpickers, and Dialogs.
-]]
-
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
 local Spiem = {
-    Version = "1.5",
+    Version = "1.6",
     Options = {}
 }
 Spiem.__index = Spiem
 
-print("--- SpiemUI V" .. Spiem.Version .. " (Fluent-Like) Loaded ---")
+print("--- SpiemUI V" .. Spiem.Version .. "Loaded ---")
 
 -- Utility Functions
 local function Tween(object, info, properties)
@@ -1018,7 +1012,7 @@ end
 function SaveManager:BuildConfigSection(tab)
     assert(self.Library, "SaveManager.Library must be set!")
 
-    tab:AddParagraph({Title = "Configuration", Content = "Save and load your settings."})
+    tab:AddSection("Configuration")
 
     tab:AddInput("SaveManager_ConfigName", {Title = "Config name", Placeholder = ""})
 
@@ -1027,6 +1021,8 @@ function SaveManager:BuildConfigSection(tab)
         Values = self:RefreshConfigList(),
         Multi = false
     })
+
+    tab:AddSection("Config Management")
 
     tab:AddButton({
         Title = "Create config",
@@ -1169,7 +1165,7 @@ function InterfaceManager:BuildInterfaceSection(tab)
     assert(self.Library, "InterfaceManager.Library must be set!")
     self:LoadSettings()
 
-    tab:AddParagraph({Title = "Interface Settings", Content = "Menu keybind and other settings."})
+    tab:AddSection("Interface")
 
     tab:AddKeybind("MenuKeybind", {
         Title = "Menu Toggle Key",

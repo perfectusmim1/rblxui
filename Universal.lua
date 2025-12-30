@@ -1,9 +1,3 @@
---[[
-    SpiemUI V1.4.1 - Advanced Universal Script
-    Comprehensive script for any Roblox game.
-    Now with SaveManager & InterfaceManager support!
-]]
-
 local url = "https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua?v=" .. tick()
 local Spiem = loadstring(game:HttpGet(url))()
 
@@ -416,14 +410,18 @@ do
     -- Config Section
     SaveManager:BuildConfigSection(Tabs.Settings)
 
+    Tabs.Settings:AddSection("Script Management")
+
     Tabs.Settings:AddButton({
         Title = "Close Script",
         Description = "Disables all features and removes menu",
         Callback = function() Window:Destroy() end
     })
 
+    Tabs.Settings:AddSection("About")
+
     Tabs.Settings:AddParagraph({
-        Title = "About",
+        Title = "Spiem Universal",
         Content = "SpiemUI Library V" .. Spiem.Version .. "\nby perfectusmim1"
     })
 end
