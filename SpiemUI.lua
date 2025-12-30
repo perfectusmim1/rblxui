@@ -299,11 +299,11 @@ function Spiem:AddTab(options)
         -- Deselect all buttons and hide their strokes
         for _, t in pairs(Hub.Tabs) do
             -- Deselect button styling
-            Tween(t.Button, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            Tween(t.Button, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
-            if ind then Tween(ind, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
+            if ind then Tween(ind, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
             local stroke = t.Button:FindFirstChildOfClass("UIStroke")
-            if stroke then Tween(stroke, {0.18, Enum.EasingStyle.Quint}, {Transparency = 1}) end
+            if stroke then Tween(stroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 1}) end
         end
         
         if isFirstSelection then
@@ -312,31 +312,20 @@ function Spiem:AddTab(options)
             Page.Parent.GroupTransparency = 0
             Page.Parent.Visible = true
         else
-            -- Crossfade animation - both tabs animate simultaneously for smoothness
-            -- Prepare new tab (start invisible and slightly to the right)
-            Page.Parent.Position = UDim2.new(0.03, 0, 0, 0)
-            Page.Parent.GroupTransparency = 1
-            Page.Parent.Visible = true
-            
-            -- Animate OUT old tabs and IN new tab at the same time
+            -- SEQUENTIAL ANIMATION: Old tab exits RIGHT, then new tab enters from LEFT
+            -- Step 1: Animate OUT old tab (slide to RIGHT and fade)
             for _, t in pairs(Hub.Tabs) do
                 if t.Page.Parent.Visible and t.Page ~= Page then
-                    -- Fade out old tab (slide slightly left)
-                    Tween(t.Page.Parent, {0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                    Tween(t.Page.Parent, {0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.In}, {
                         GroupTransparency = 1,
-                        Position = UDim2.new(-0.03, 0, 0, 0)
+                        Position = UDim2.new(0.08, 0, 0, 0) -- Slide RIGHT
                     })
                 end
             end
             
-            -- Animate IN new tab immediately (no delay)
-            Tween(Page.Parent, {0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
-                GroupTransparency = 0,
-                Position = UDim2.new(0, 0, 0, 0)
-            })
-            
-            -- Clean up old tabs after animation completes
-            task.delay(0.22, function()
+            -- Step 2: After old tab is gone, bring in new tab from LEFT
+            task.delay(0.1, function()
+                -- Hide old tabs completely
                 for _, t in pairs(Hub.Tabs) do
                     if t.Page ~= Page then
                         t.Page.Parent.Visible = false
@@ -344,13 +333,24 @@ function Spiem:AddTab(options)
                         t.Page.Parent.GroupTransparency = 0
                     end
                 end
+                
+                -- Prepare new tab (start from LEFT, invisible)
+                Page.Parent.Position = UDim2.new(-0.08, 0, 0, 0)
+                Page.Parent.GroupTransparency = 1
+                Page.Parent.Visible = true
+                
+                -- Animate IN new tab (slide from LEFT to center)
+                Tween(Page.Parent, {0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                    GroupTransparency = 0,
+                    Position = UDim2.new(0, 0, 0, 0)
+                })
             end)
         end
         
         -- Select button styling with smooth transition + stroke
-        Tween(BTN, {0.18, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
-        Tween(Indicator, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
-        Tween(BTNStroke, {0.18, Enum.EasingStyle.Quint}, {Transparency = 0.5})
+        Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(Indicator, {0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
+        Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.5})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
