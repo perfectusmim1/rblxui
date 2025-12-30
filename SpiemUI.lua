@@ -284,38 +284,95 @@ function Spiem:AddTab(options)
 
     function tab:Select()
         if Hub.CurrentTab == tab then return end
+        
+        -- Save old tab for animation
+        local oldTab = Hub.CurrentTab
         Hub.CurrentTab = tab
+        
+        -- Check if this is the first tab selection (no previous tab)
+        local isFirstSelection = oldTab == nil
 
-        -- Instantly hide ALL other tabs first
+        -- Animate OUT old tabs with fade + slide (skip if first selection)
         for _, t in pairs(Hub.Tabs) do
-            t.Page.Parent.Visible = false
-            Tween(t.Button, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+            if t.Page.Parent.Visible and not isFirstSelection then
+                -- Fade out and slide left
+                Tween(t.Page.Parent, {0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                    GroupTransparency = 1,
+                    Position = UDim2.new(-0.05, 0, 0, 0)
+                })
+            end
+            -- Deselect button styling
+            Tween(t.Button, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
             local ind = t.Button:FindFirstChild("Frame")
-            if ind then Tween(ind, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
+            if ind then Tween(ind, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1}) end
         end
         
-        -- Then show only THIS tab
-        Page.Parent.Visible = true
-        Page.Parent.GroupTransparency = 0
+        if isFirstSelection then
+            -- First tab: Show immediately without animation
+            Page.Parent.Position = UDim2.new(0, 0, 0, 0)
+            Page.Parent.GroupTransparency = 0
+            Page.Parent.Visible = true
+        else
+            -- Wait for old tab to fade out, then animate in new tab
+            task.delay(0.15, function()
+                -- Hide all other tabs
+                for _, t in pairs(Hub.Tabs) do
+                    if t.Page ~= Page then
+                        t.Page.Parent.Visible = false
+                        t.Page.Parent.Position = UDim2.new(0, 0, 0, 0)
+                    end
+                end
+                
+                -- Prepare new tab for entrance
+                Page.Parent.Position = UDim2.new(0.05, 0, 0, 0)
+                Page.Parent.GroupTransparency = 1
+                Page.Parent.Visible = true
+                
+                -- Animate IN new tab with fade + slide
+                Tween(Page.Parent, {0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {
+                    GroupTransparency = 0,
+                    Position = UDim2.new(0, 0, 0, 0)
+                })
+            end)
+        end
         
-        Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
-        Tween(Indicator, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0})
+        -- Select button styling with smooth transition
+        Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        Tween(Indicator, {0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
-            Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.8})
+            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.85})
         end
     end)
     BTN.MouseLeave:Connect(function()
         if not Page.Parent.Visible then
-            Tween(BTN, {0.2, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
+            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 1})
         end
     end)
+    
+    -- Enhanced click feedback with smooth scale animation
+    local isPressed = false
     BTN.MouseButton1Down:Connect(function()
-        Tween(BTN, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, -5, 0, 32)})
+        isPressed = true
+        -- Scale down smoothly with a slight bounce feel
+        Tween(BTN, {0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out}, {Size = UDim2.new(1, -4, 0, 31)})
+        Tween(BTN, {0.08, Enum.EasingStyle.Quad}, {BackgroundTransparency = Page.Parent.Visible and 0.4 or 0.7})
     end)
     BTN.MouseButton1Up:Connect(function()
-        Tween(BTN, {0.1, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 34)})
+        if isPressed then
+            isPressed = false
+            -- Scale back with elastic bounce
+            Tween(BTN, {0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 34)})
+            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = Page.Parent.Visible and 0.5 or 1})
+        end
+    end)
+    BTN.MouseLeave:Connect(function()
+        -- Reset if mouse leaves while pressed
+        if isPressed then
+            isPressed = false
+            Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {Size = UDim2.new(1, 0, 0, 34)})
+        end
     end)
     BTN.MouseButton1Click:Connect(function() tab:Select() end)
     table.insert(Hub.Tabs, {Button = BTN, Page = Page})
