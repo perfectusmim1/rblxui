@@ -74,7 +74,7 @@ function Spiem:Notify(options)
     icon.Position = UDim2.new(1, -38, 0, 10)
     icon.Size = UDim2.new(0, 24, 0, 24)
     icon.Image = "rbxassetid://108404950895534"
-    icon.ImageColor3 = Color3.fromRGB(0, 150, 255)
+    icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 
     local t = Instance.new("TextLabel", frame)
     t.BackgroundTransparency, t.Position, t.Size, t.Font = 1, UDim2.new(0, 15, 0, 8), UDim2.new(1, -55, 0, 18), Enum.Font.BuilderSansBold
@@ -260,7 +260,7 @@ function Spiem:AddTab(options)
     local name = type(options) == "table" and options.Title or options
     local Hub, tab = self, {Name = name}
     local BTN = Instance.new("TextButton", Hub.TabList)
-    BTN.BackgroundColor3, BTN.BackgroundTransparency, BTN.Size, BTN.AutoButtonColor = Color3.fromRGB(60, 60, 60), 1, UDim2.new(1, 0, 0, 34), false
+    BTN.BackgroundColor3, BTN.BackgroundTransparency, BTN.Size, BTN.AutoButtonColor = Color3.fromRGB(50, 50, 50), 1, UDim2.new(1, 0, 0, 34), false
     BTN.Font, BTN.Text, BTN.TextColor3, BTN.TextSize = Enum.Font.BuilderSansMedium, name, Color3.fromRGB(180, 180, 180), 14
     Instance.new("UICorner", BTN).CornerRadius = UDim.new(0, 6)
     
@@ -356,10 +356,10 @@ function Spiem:AddTab(options)
             end)
         end
         
-        -- Select button styling with smooth transition + stroke (more visible)
-        Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.5, TextColor3 = Color3.fromRGB(255, 255, 255)})
+        -- Select button styling with smooth transition + visible gray background
+        Tween(BTN, {0.15, Enum.EasingStyle.Quint}, {BackgroundTransparency = 0.3, TextColor3 = Color3.fromRGB(255, 255, 255)})
         Tween(Indicator, {0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out}, {BackgroundTransparency = 0})
-        Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.3, Color = Color3.fromRGB(75, 75, 75)})
+        Tween(BTNStroke, {0.15, Enum.EasingStyle.Quint}, {Transparency = 0.2, Color = Color3.fromRGB(80, 80, 80)})
     end
     BTN.MouseEnter:Connect(function()
         if not Page.Parent.Visible then
