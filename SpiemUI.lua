@@ -196,6 +196,8 @@ function Spiem.new(options)
     CreateTopbarBtn("rbxassetid://7072706663", Color3.fromRGB(200, 200, 200), ToggleMinimize) -- Minimize
     CreateTopbarBtn("rbxassetid://7072725342", Color3.fromRGB(255, 80, 80), function() self:Destroy() end) -- Close
 
+    self.ToggleMinimize = ToggleMinimize
+
     self.ToggleConnection = UserInputService.InputBegan:Connect(function(i, g)
         if not g and i.KeyCode == self.MinimizeKey then ToggleMinimize() end
     end)

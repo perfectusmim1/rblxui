@@ -12,88 +12,80 @@ end
 getgenv().SeisenHubLoaded = true
 getgenv().SeisenHubRunning = true
 
--- Load Obsidian UI
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
-local Window = Library:CreateWindow({
-    Title = "DYHUB",
-    Footer = "DYHUB @ Premium - Anime Eternal (dsc.gg/dyhub)",
-    ToggleKeybind = Enum.KeyCode.K,
-    Center = true,
-    AutoShow = true,
-    MobileButtonsSide = "Left"
+-- Services
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Load Spiem UI
+local Spiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua"))()
+local Window = Spiem.new({
+    Title = "DYHUB | Anime Eternal",
+    MinimizeKey = Enum.KeyCode.K
 })
+
+-- Reference for Options (needed for some logic)
+local Options = Spiem.Options
 
 -- Store ScreenGui for cleanup
-getgenv().SeisenHubUI = Library.Gui
+getgenv().SeisenHubUI = Window.ScreenGui
 
--- Tabs & Groups
+-- Tabs
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main" }),
+    Teleport = Window:AddTab({ Title = "Teleport & Dungeon" }),
+    Rolls = Window:AddTab({ Title = "Rolls" }),
+    Upgrades = Window:AddTab({ Title = "Upgrades" }),
+    Settings = Window:AddTab({ Title = "UI Settings" })
+}
 
-local MainTab = Window:AddTab("Main", "atom")
-local LeftGroupbox = MainTab:AddLeftGroupbox("Automation")
-local StatsGroupbox = MainTab:AddLeftGroupbox("Auto Stats")
-local RewardsGroupbox = MainTab:AddRightGroupbox("Auto Rewards")
+-- Sections for Main Tab
+Tabs.Main:AddSection("Automation")
+Tabs.Main:AddSection("Auto Stats")
+Tabs.Main:AddSection("Auto Rewards")
 
-local TeleportTab = Window:AddTab("Teleport & Dungeon", "map")
-local TPGroupbox = TeleportTab:AddLeftGroupbox("Main Teleport")
-local DungeonGroupbox = TeleportTab:AddRightGroupbox("Auto Dungeon")
+-- Sections for Teleport Tab
+Tabs.Teleport:AddSection("Main Teleport")
+Tabs.Teleport:AddSection("Auto Dungeon")
 
-local Roll = Window:AddTab("Rolls", "dice-5")
-local RollGroupbox = Roll:AddLeftGroupbox("Auto Rolls")
-local RollGroupbox2 = Roll:AddLeftGroupbox("Auto Roll Tokens")
-local AutoDeleteGroupbox = Roll:AddRightGroupbox("Auto Delete Stars")
-local AutoDeleteGroupbox2 = Roll:AddRightGroupbox("Auto Delete Sword")
+-- Sections for Rolls Tab
+Tabs.Rolls:AddSection("Auto Rolls")
+Tabs.Rolls:AddSection("Auto Roll Tokens")
+Tabs.Rolls:AddSection("Auto Delete Stars")
+Tabs.Rolls:AddSection("Auto Delete Sword")
 
-local UP = Window:AddTab("Upgrades", "arrow-up")
-local UpgradeGroupbox = UP:AddLeftGroupbox("Upgrades")
-local Upgrade2 = UP:AddRightGroupbox("Upgrades 2")
+-- Sections for Upgrades Tab
+Tabs.Upgrades:AddSection("Upgrades")
+Tabs.Upgrades:AddSection("Upgrades 2")
 
-local UISettings = Window:AddTab("UI Settings", "settings")
-local UnloadGroupbox = UISettings:AddLeftGroupbox("Utilities")
-local RedeemGroupbox = UISettings:AddRightGroupbox("Redeem Codes")
-local UISettingsGroup = UISettings:AddLeftGroupbox("UI Customization")
-local InfoGroup = UISettings:AddRightGroupbox("Script Information")
+-- Sections for Settings Tab
+Tabs.Settings:AddSection("Utilities")
+Tabs.Settings:AddSection("Redeem Codes")
+Tabs.Settings:AddSection("UI Customization")
+Tabs.Settings:AddSection("Script Information")
 
--- Script Information Section
-InfoGroup:AddLabel("Script by: DYHUB")
-InfoGroup:AddLabel("Version: 2.3.1")
-InfoGroup:AddLabel("Game: Anime Eternal")
+-- Script Information Section (in Settings Tab)
+Tabs.Settings:AddParagraph({ Title = "Script by: DYHUB", Content = "" })
+Tabs.Settings:AddParagraph({ Title = "Version: 2.3.1", Content = "" })
+Tabs.Settings:AddParagraph({ Title = "Game: Anime Eternal", Content = "" })
 
-InfoGroup:AddButton("Join Discord", function()
-    setclipboard("dsc.gg/dyhub")
-    print("✅ Copied Discord Invite!")
-end)
-
--- Mobile detection and UI adjustments
-if Library.IsMobile then
-    InfoGroup:AddLabel("📱 Mobile Device Detected")
-    InfoGroup:AddLabel("UI optimized for mobile")
-else
-    InfoGroup:AddLabel("🖥️ Desktop Device Detected")
-end
-
--- UI Scale dropdown for mobile compatibility
-UISettingsGroup:AddDropdown("UIScale", {
-    Text = "UI Scale",
-    Values = {"75%", "100%", "125%", "150%"},
-    Default = 2, -- 100%
-    Tooltip = "Adjust UI size for better mobile experience",
-    Callback = function(value)
-        local scaleMap = {
-            ["75%"] = 75,
-            ["100%"] = 100,
-            ["125%"] = 125,
-            ["150%"] = 150
-        }
-        
-        -- Disable the library's watermark before scaling
-        Library:SetWatermarkVisibility(false)
-        
-        -- Apply DPI scale to UI only
-        Library:SetDPIScale(scaleMap[value])
-        
-        -- Don't re-enable the library watermark - we'll use our custom one
+Tabs.Settings:AddButton({
+    Title = "Join Discord",
+    Callback = function()
+        setclipboard("dsc.gg/dyhub")
+        print("✅ Copied Discord Invite!")
     end
 })
+
+-- Mobile detection and UI adjustments
+if UserInputService.TouchEnabled then
+    Tabs.Settings:AddParagraph({ Title = "📱 Mobile Device Detected", Content = "UI optimized for mobile" })
+else
+    Tabs.Settings:AddParagraph({ Title = "🖥️ Desktop Device Detected", Content = "" })
+end
 
 -- Custom Watermark setup (independent of UI scaling)
 local CoreGui = game:GetService("CoreGui")
@@ -235,10 +227,7 @@ PingText.TextStrokeTransparency = 0.5
 PingText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 PingText.Parent = WatermarkFrame
 
--- Make watermark draggable
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
+-- Draggable state variables
 local dragging = false
 local dragStart = nil
 local startPos = nil
@@ -297,7 +286,7 @@ local function onInputBegan(input)
                     
                     if distance <= dragThreshold then
                         -- Toggle UI visibility
-                        Library:Toggle()
+                        Window:ToggleMinimize()
                         print("🔄 UI toggled via watermark click")
                     end
                 end
@@ -1440,11 +1429,11 @@ local function applyMutePetSoundsState()
 end
 
 task.defer(function()
-    repeat task.wait() until Library.Flags
+    repeat task.wait() until Spiem.Options
     for flag, value in pairs(config) do
-        if Library.Flags[flag] then
+        if Spiem.Options[flag] then
             pcall(function()
-                Library.Flags[flag]:Set(value)
+                Spiem.Options[flag]:Set(value)
             end)
         end
     end
@@ -1894,8 +1883,8 @@ if config.AutoDeleteGachaUnitsToggle then startAutoDeleteGacha() end
 
 
 -- Auto Farm Toggle
-LeftGroupbox:AddToggle("AutoFarmToggle", {
-    Text = "Fast Auto Farm",
+Tabs.Main:AddToggle("AutoFarmToggle", {
+    Title = "Fast Auto Farm",
     Default = isAuraEnabled,
     Callback = function(Value)
         disableAllAurasExcept("AutoFarm")
@@ -1907,8 +1896,8 @@ LeftGroupbox:AddToggle("AutoFarmToggle", {
 })
 
 -- Slow Auto Farm Toggle
-LeftGroupbox:AddToggle("FastKillAuraToggle", {
-    Text = "Slow Auto Farm",
+Tabs.Main:AddToggle("FastKillAuraToggle", {
+    Title = "Slow Auto Farm",
     Default = fastKillAuraEnabled,
     Callback = function(Value)
         disableAllAurasExcept("FastKillAura")
@@ -1920,8 +1909,8 @@ LeftGroupbox:AddToggle("FastKillAuraToggle", {
 })
 
 -- Fast Kill Aura Toggle
-LeftGroupbox:AddToggle("SlowKillAuraToggle", {
-    Text = "Fast Kill Aura",
+Tabs.Main:AddToggle("SlowKillAuraToggle", {
+    Title = "Fast Kill Aura",
     Default = slowKillAuraEnabled,
     Callback = function(Value)
         disableAllAurasExcept("SlowKillAura")
@@ -1933,8 +1922,8 @@ LeftGroupbox:AddToggle("SlowKillAuraToggle", {
 })
 
 -- Auto Rank Toggle
-LeftGroupbox:AddToggle("AutoRankToggle", {
-    Text = "Auto Rank",
+Tabs.Main:AddToggle("AutoRankToggle", {
+    Title = "Auto Rank",
     Default = autoRankEnabled,
     Callback = function(Value)
         autoRankEnabled = Value
@@ -1945,8 +1934,8 @@ LeftGroupbox:AddToggle("AutoRankToggle", {
 })
 
 -- Auto Avatar Leveling Toggle
-LeftGroupbox:AddToggle("AutoAvatarLevelingToggle", {
-    Text = "Auto Avatar Leveling",
+Tabs.Main:AddToggle("AutoAvatarLevelingToggle", {
+    Title = "Auto Avatar Leveling",
     Default = autoAvatarLevelingEnabled,
     Callback = function(Value)
         autoAvatarLevelingEnabled = Value
@@ -1971,8 +1960,8 @@ LeftGroupbox:AddToggle("AutoAvatarLevelingToggle", {
 })
 
 -- Auto Accept Quests Toggle
-LeftGroupbox:AddToggle("AutoAcceptAllQuestsToggle", {
-    Text = "Auto Accept & Claim All Quests",
+Tabs.Main:AddToggle("AutoAcceptAllQuestsToggle", {
+    Title = "Auto Accept & Claim All Quests",
     Default = autoAcceptAllQuestsEnabled,
     Callback = function(Value)
         autoAcceptAllQuestsEnabled = Value
@@ -1983,8 +1972,8 @@ LeftGroupbox:AddToggle("AutoAcceptAllQuestsToggle", {
 })
 
 -- Auto Claim Achievements Toggle
-LeftGroupbox:AddToggle("AutoClaimAchievement", {
-    Text = "Auto Achievements",
+Tabs.Main:AddToggle("AutoClaimAchievement", {
+    Title = "Auto Achievements",
     Default = autoClaimAchievementsEnabled,
     Callback = function(Value)
         autoClaimAchievementsEnabled = Value
@@ -1994,8 +1983,8 @@ LeftGroupbox:AddToggle("AutoClaimAchievement", {
     end
 })
 
-LeftGroupbox:AddToggle("AutoObeliskToggle", {
-    Text = "Auto Obelisk Upgrade",
+Tabs.Main:AddToggle("AutoObeliskToggle", {
+    Title = "Auto Obelisk Upgrade",
     Default = autoObeliskEnabled,
     Callback = function(Value)
         autoObeliskEnabled = Value
@@ -2010,8 +1999,8 @@ LeftGroupbox:AddToggle("AutoObeliskToggle", {
 
 
 -- Auto Roll Dragon Race Toggle
-RollGroupbox2:AddToggle("AutoRollDragonRaceToggle", {
-    Text = "Auto Roll Dragon Race",
+Tabs.Rolls:AddToggle("AutoRollDragonRaceToggle", {
+    Title = "Auto Roll Dragon Race",
     Default = autoRollDragonRaceEnabled,
     Callback = function(Value)
         autoRollDragonRaceEnabled = Value
@@ -2022,8 +2011,8 @@ RollGroupbox2:AddToggle("AutoRollDragonRaceToggle", {
 })
 
 -- Auto Roll Saiyan Evolution Toggle
-RollGroupbox2:AddToggle("AutoRollSaiyanEvolutionToggle", {
-    Text = "Auto Roll Saiyan Evolution",
+Tabs.Rolls:AddToggle("AutoRollSaiyanEvolutionToggle", {
+    Title = "Auto Roll Saiyan Evolution",
     Default = autoRollSaiyanEvolutionEnabled,
     Callback = function(Value)
         autoRollSaiyanEvolutionEnabled = Value
@@ -2034,8 +2023,8 @@ RollGroupbox2:AddToggle("AutoRollSaiyanEvolutionToggle", {
 })
 
 -- Auto Roll Stars Toggle
-RollGroupbox:AddToggle("AutoRollStarsToggle", {
-    Text = "Auto Roll Stars",
+Tabs.Rolls:AddToggle("AutoRollStarsToggle", {
+    Title = "Auto Roll Stars",
     Default = autoRollEnabled,
     Callback = function(Value)
         autoRollEnabled = Value
@@ -2065,11 +2054,11 @@ for place, star in pairs(placeToStar) do
     starToPlace[star] = place
 end
 -- Select Star Dropdown
-RollGroupbox:AddDropdown("SelectStarDropdown", {
+Tabs.Rolls:AddDropdown("SelectStarDropdown", {
     Values = {"Earth City", "Dungeon Lobby 1", "Windmill Island", "Soul Society", "Cursed School", "Slayer Village", "Solo Island", "Clover Village", "Leaf Village", "Spirit Residence", "Magic_Hunter_City", "Titan Village", "Villageof Sins"},
     Default = starToPlace[selectedStar] or "Earth City",
     Multi = false,
-    Text = "Select Star (by Place)",
+    Title = "Select Star (by Place)",
     Callback = function(Option)
         selectedStar = placeToStar[Option] or "Star_1"
         config.SelectStarDropdown = selectedStar
@@ -2078,12 +2067,11 @@ RollGroupbox:AddDropdown("SelectStarDropdown", {
 })
 
 -- Delay Slider
-RollGroupbox:AddSlider("DelayBetweenRollsSlider", {
-    Text = "Delay Between Rolls",
+Tabs.Rolls:AddSlider("DelayBetweenRollsSlider", {
+    Title = "Delay Between Rolls",
     Min = 0.5,
     Max = 2,
     Default = delayBetweenRolls,
-    Suffix = "s",
     Callback = function(Value)
         delayBetweenRolls = Value
         config.DelayBetweenRollsSlider = Value
@@ -2092,8 +2080,8 @@ RollGroupbox:AddSlider("DelayBetweenRollsSlider", {
 })
 
 -- Auto Roll Swords
-RollGroupbox2:AddToggle("AutoRollSwordsToggle", {
-    Text = "Auto Roll Swords",
+Tabs.Rolls:AddToggle("AutoRollSwordsToggle", {
+    Title = "Auto Roll Swords",
     Default = autoRollSwordsEnabled,
     Callback = function(Value)
         autoRollSwordsEnabled = Value
@@ -2104,8 +2092,8 @@ RollGroupbox2:AddToggle("AutoRollSwordsToggle", {
 })
 
 -- Auto Roll Pirate Crew
-RollGroupbox2:AddToggle("AutoRollPirateCrewToggle", {
-    Text = "Auto Roll Pirate Crew",
+Tabs.Rolls:AddToggle("AutoRollPirateCrewToggle", {
+    Title = "Auto Roll Pirate Crew",
     Default = autoRollPirateCrewEnabled,
     Callback = function(Value)
         autoRollPirateCrewEnabled = Value
@@ -2116,8 +2104,8 @@ RollGroupbox2:AddToggle("AutoRollPirateCrewToggle", {
 })
 
 -- Auto Roll Demon Fruits
-RollGroupbox2:AddToggle("AutoRollDemonFruitsToggle", {
-    Text = "Auto Roll Demon Fruits",
+Tabs.Rolls:AddToggle("AutoRollDemonFruitsToggle", {
+    Title = "Auto Roll Demon Fruits",
     Default = autoRollDemonFruitsEnabled,
     Callback = function(Value)
         autoRollDemonFruitsEnabled = Value
@@ -2127,8 +2115,8 @@ RollGroupbox2:AddToggle("AutoRollDemonFruitsToggle", {
     end
 })
 
-RollGroupbox2:AddToggle("AutoRollReiatsuColorToggle", {
-    Text = "Auto Roll Reiatsu Color",
+Tabs.Rolls:AddToggle("AutoRollReiatsuColorToggle", {
+    Title = "Auto Roll Reiatsu Color",
     Default = autoRollReiatsuColorEnabled,
     Callback = function(Value)
         autoRollReiatsuColorEnabled = Value
@@ -2138,8 +2126,8 @@ RollGroupbox2:AddToggle("AutoRollReiatsuColorToggle", {
     end
 })
 
-RollGroupbox2:AddToggle("AutoRollZanpakutoToggle", {
-    Text = "Auto Roll Zanpakuto",
+Tabs.Rolls:AddToggle("AutoRollZanpakutoToggle", {
+    Title = "Auto Roll Zanpakuto",
     Default = autoRollZanpakutoEnabled,
     Callback = function(Value)
         autoRollZanpakutoEnabled = Value
@@ -2149,8 +2137,8 @@ RollGroupbox2:AddToggle("AutoRollZanpakutoToggle", {
     end
 })
 
-RollGroupbox2:AddToggle("AutoRollCursesToggle", {
-    Text = "Auto Roll Curses",
+Tabs.Rolls:AddToggle("AutoRollCursesToggle", {
+    Title = "Auto Roll Curses",
     Default = autoRollCursesEnabled,
     Callback = function(Value)
         autoRollCursesEnabled = Value
@@ -2160,8 +2148,8 @@ RollGroupbox2:AddToggle("AutoRollCursesToggle", {
     end
 })
 
-RollGroupbox2:AddToggle("AutoRollDemonArtsToggle", {
-    Text = "Auto Roll Demon Arts",
+Tabs.Rolls:AddToggle("AutoRollDemonArtsToggle", {
+    Title = "Auto Roll Demon Arts",
     Default = autoRollDemonArtsEnabled,
     Callback = function(Value)
         autoRollDemonArtsEnabled = Value
@@ -2172,11 +2160,11 @@ RollGroupbox2:AddToggle("AutoRollDemonArtsToggle", {
 })
 
 -- Auto Delete Settings
-AutoDeleteGroupbox:AddLabel("Auto Delete Settings")
+Tabs.Rolls:AddParagraph({ Title = "Auto Delete Settings", Content = "" })
 
 -- Auto Delete Toggle
-AutoDeleteGroupbox:AddToggle("AutoDeleteUnitsToggle", {
-    Text = "Auto Delete Units",
+Tabs.Rolls:AddToggle("AutoDeleteUnitsToggle", {
+    Title = "Auto Delete Units",
     Default = autoDeleteEnabled,
     Callback = function(Value)
         autoDeleteEnabled = Value
@@ -2187,11 +2175,11 @@ AutoDeleteGroupbox:AddToggle("AutoDeleteUnitsToggle", {
 })
 
 -- Select Star for Auto Delete Dropdown
-AutoDeleteGroupbox:AddDropdown("SelectDeleteStarDropdown", {
+Tabs.Rolls:AddDropdown("SelectDeleteStarDropdown", {
     Values = {"Earth City", "Dungeon Lobby 1", "Windmill Island", "Soul Society", "Cursed School", "Slayer Village", "Solo Island", "Clover Village", "Leaf Village", "Spirit Residence", "Magic_Hunter_City", "Titan Village", "Villageof Sins"},
     Default = starToPlace[selectedDeleteStar] or "Earth City",
     Multi = false,
-    Text = "Select Star for Auto Delete (by Place)",
+    Title = "Select Star for Auto Delete (by Place)",
     Callback = function(Option)
         selectedDeleteStar = placeToStar[Option] or "Star_1"
         config.SelectDeleteStarDropdown = selectedDeleteStar
@@ -2214,11 +2202,11 @@ for _, displayName in ipairs(selectedRaritiesDisplay) do
 end
 
 -- Auto Delete Rarities Dropdown
-AutoDeleteGroupbox:AddDropdown("AutoDeleteRaritiesDropdown", {
+Tabs.Rolls:AddDropdown("AutoDeleteRaritiesDropdown", {
     Values = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"},
     Default = selectedRaritiesDisplay,
     Multi = true,
-    Text = "Select Rarities to Delete",
+    Title = "Select Rarities to Delete",
     Callback = function(Selected)
         selectedRarities = {}
         for displayName, _ in pairs(Selected) do
@@ -2234,8 +2222,8 @@ AutoDeleteGroupbox:AddDropdown("AutoDeleteRaritiesDropdown", {
     end
 })
 
-AutoDeleteGroupbox2:AddToggle("AutoDeleteGachaUnitsToggle", {
-    Text = "Auto Delete Gacha Units",
+Tabs.Rolls:AddToggle("AutoDeleteGachaUnitsToggle", {
+    Title = "Auto Delete Gacha Units",
     Default = config.AutoDeleteGachaUnitsToggle or false,
     Callback = function(Value)
         config.AutoDeleteGachaUnitsToggle = Value
@@ -2244,11 +2232,11 @@ AutoDeleteGroupbox2:AddToggle("AutoDeleteGachaUnitsToggle", {
     end
 })
 
-AutoDeleteGroupbox2:AddDropdown("AutoDeleteGachaRaritiesDropdown", {
+Tabs.Rolls:AddDropdown("AutoDeleteGachaRaritiesDropdown", {
     Values = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical", "Secret"},
     Default = selectedGachaRarities,
     Multi = true,
-    Text = "Select Gacha Rarities to Delete",
+    Title = "Select Gacha Rarities to Delete",
     Callback = function(Selected)
         selectedGachaRarities = {}
         for displayName, _ in pairs(Selected) do
@@ -2268,11 +2256,11 @@ AutoDeleteGroupbox2:AddDropdown("AutoDeleteGachaRaritiesDropdown", {
 
 
 
-StatsGroupbox:AddDropdown("AutoStatSingleDropdown", {
+Tabs.Main:AddDropdown("AutoStatSingleDropdown", {
     Values = stats,
     Default = selectedStat, -- display name
     Multi = false,
-    Text = "Select Stat",
+    Title = "Select Stat",
     Callback = function(Value)
         selectedStat = Value -- display name
         config.AutoStatSingleDropdown = Value
@@ -2280,8 +2268,8 @@ StatsGroupbox:AddDropdown("AutoStatSingleDropdown", {
     end
 })
 
-StatsGroupbox:AddToggle("AutoAssignStatToggle", {
-    Text = "Enable Auto Stat",
+Tabs.Main:AddToggle("AutoAssignStatToggle", {
+    Title = "Enable Auto Stat",
     Default = autoStatsRunning,
     Callback = function(Value)
         autoStatsRunning = Value
@@ -2291,12 +2279,12 @@ StatsGroupbox:AddToggle("AutoAssignStatToggle", {
     end
 })
 
-StatsGroupbox:AddSlider("PointsPerSecondSlider", {
-    Text = "Points/Second",
+Tabs.Main:AddSlider("PointsPerSecondSlider", {
+    Title = "Points/Second",
     Default = pointsPerSecond,
     Min = 1,
     Max = 10,
-    Rounding = 0,
+    Rounding = 1,
     Callback = function(Value)
         pointsPerSecond = Value
         config.PointsPerSecondSlider = Value
@@ -2305,8 +2293,8 @@ StatsGroupbox:AddSlider("PointsPerSecondSlider", {
 })
 
 -- Auto Collect Rewards
-RewardsGroupbox:AddToggle("AutoClaimTimeRewardToggle", {
-    Text = "Auto Claim Time Reward",
+Tabs.Main:AddToggle("AutoClaimTimeRewardToggle", {
+    Title = "Auto Claim Time Reward",
     Default = isAutoTimeRewardEnabled,
     Callback = function(Value)
         isAutoTimeRewardEnabled = Value
@@ -2316,8 +2304,8 @@ RewardsGroupbox:AddToggle("AutoClaimTimeRewardToggle", {
     end
 })
 
-RewardsGroupbox:AddToggle("AutoClaimDailyChestToggle", {
-    Text = "Auto Claim Daily Chest",
+Tabs.Main:AddToggle("AutoClaimDailyChestToggle", {
+    Title = "Auto Claim Daily Chest",
     Default = isAutoDailyChestEnabled,
     Callback = function(Value)
         isAutoDailyChestEnabled = Value
@@ -2327,8 +2315,8 @@ RewardsGroupbox:AddToggle("AutoClaimDailyChestToggle", {
     end
 })
 
-RewardsGroupbox:AddToggle("AutoClaimVipChestToggle", {
-    Text = "Auto Claim Vip Chest (VIP Gamepass required)",
+Tabs.Main:AddToggle("AutoClaimVipChestToggle", {
+    Title = "Auto Claim Vip Chest (VIP Gamepass required)",
     Default = isAutoVipChestEnabled,
     Callback = function(Value)
         isAutoVipChestEnabled = Value
@@ -2338,8 +2326,8 @@ RewardsGroupbox:AddToggle("AutoClaimVipChestToggle", {
     end
 })
 
-RewardsGroupbox:AddToggle("AutoClaimGroupChestToggle", {
-    Text = "Auto Claim Group Chest",
+Tabs.Main:AddToggle("AutoClaimGroupChestToggle", {
+    Title = "Auto Claim Group Chest",
     Default = isAutoGroupChestEnabled,
     Callback = function(Value)
         isAutoGroupChestEnabled = Value
@@ -2349,8 +2337,8 @@ RewardsGroupbox:AddToggle("AutoClaimGroupChestToggle", {
     end
 })
 
-RewardsGroupbox:AddToggle("AutoClaimPremiumChestToggle", {
-    Text = "Auto Claim Premium Chest (Premium User required)",
+Tabs.Main:AddToggle("AutoClaimPremiumChestToggle", {
+    Title = "Auto Claim Premium Chest (Premium User required)",
     Default = isAutoPremiumChestEnabled,
     Callback = function(Value)
         isAutoPremiumChestEnabled = Value
@@ -2377,11 +2365,11 @@ local teleportLocations = {
     ["Villageof Sins"] = "Village_of_Sins",
 }
 
-TPGroupbox:AddDropdown("MainTeleportDropdown", {
+Tabs.Teleport:AddDropdown("MainTeleportDropdown", {
     Values = {"Earth City", "Dungeon Lobby 1", "Windmill Island", "Soul Society", "Cursed School", "Slayer Village", "Solo Island", "Clover Village", "Leaf Village", "Spirit Residence", "Magic_Hunter_City", "Titan Village", "Villageof Sins"},
     Default = config.MainTeleportDropdown or "Earth City",
     Multi = false,
-    Text = "Teleport To",
+    Title = "Teleport To",
     Callback = function(selected)
         local locationKey = teleportLocations[selected]
         if locationKey then
@@ -2413,8 +2401,8 @@ local dungeonList = {
 
 for _, dungeon in ipairs(dungeonList) do
     local default = table.find(selectedDungeons, dungeon) ~= nil
-    DungeonGroupbox:AddToggle("Toggle_" .. dungeon, {
-        Text = dungeon:gsub("_", " "),
+    Tabs.Teleport:AddToggle("Toggle_" .. dungeon, {
+        Title = dungeon:gsub("_", " "),
         Default = default,
         Callback = function(Value)
             if Value then
@@ -2436,8 +2424,8 @@ for _, dungeon in ipairs(dungeonList) do
 end
 
 -- Toggle: Auto enter dungeon
-DungeonGroupbox:AddToggle("AutoEnterDungeonToggle", {
-    Text = "Auto Enter Dungeon(s)",
+Tabs.Teleport:AddToggle("AutoEnterDungeonToggle", {
+    Title = "Auto Enter Dungeon(s)",
     Default = autoEnterDungeon,
     Callback = function(Value)
         autoEnterDungeon = Value
@@ -2459,8 +2447,8 @@ for _, upgradeName in ipairs(upgradeOptions) do
     enabledUpgrades[upgradeName] = config[upgradeName .. "_Toggle"] or false
 end
 
-UpgradeGroupbox:AddToggle("AutoUpgradeToggle", {
-    Text = "Auto Upgrade",
+Tabs.Upgrades:AddToggle("AutoUpgradeToggle", {
+    Title = "Auto Upgrade",
     Default = autoUpgradeEnabled,
     Callback = function(Value)
         autoUpgradeEnabled = Value
@@ -2470,10 +2458,10 @@ UpgradeGroupbox:AddToggle("AutoUpgradeToggle", {
     end
 })
 
-UpgradeGroupbox:AddLabel("Upgrade List")
+Tabs.Upgrades:AddParagraph({ Title = "Upgrade List", Content = "" })
 for _, upgradeName in ipairs(upgradeOptions) do
-    UpgradeGroupbox:AddToggle(upgradeName .. "_Toggle", {
-        Text = upgradeName:gsub("_", " "),
+    Tabs.Upgrades:AddToggle(upgradeName .. "_Toggle", {
+        Title = upgradeName:gsub("_", " "),
         Default = enabledUpgrades[upgradeName],
         Callback = function(Value)
             enabledUpgrades[upgradeName] = Value
@@ -2484,8 +2472,8 @@ for _, upgradeName in ipairs(upgradeOptions) do
 end
 
 -- Auto Upgrade Haki
-Upgrade2:AddToggle("AutoHakiUpgradeToggle", {
-    Text = "Auto Haki Upgrade",
+Tabs.Upgrades:AddToggle("AutoHakiUpgradeToggle", {
+    Title = "Auto Haki Upgrade",
     Default = autoHakiUpgradeEnabled,
     Callback = function(Value)
         autoHakiUpgradeEnabled = Value
@@ -2495,8 +2483,8 @@ Upgrade2:AddToggle("AutoHakiUpgradeToggle", {
     end
 })
 
-Upgrade2:AddToggle("AutoAttackRangeUpgradeToggle", {
-    Text = "Auto Attack Range Upgrade",
+Tabs.Upgrades:AddToggle("AutoAttackRangeUpgradeToggle", {
+    Title = "Auto Attack Range Upgrade",
     Default = autoAttackRangeUpgradeEnabled,
     Callback = function(Value)
         autoAttackRangeUpgradeEnabled = Value
@@ -2506,8 +2494,8 @@ Upgrade2:AddToggle("AutoAttackRangeUpgradeToggle", {
     end
 })
 
-Upgrade2:AddToggle("AutoSpiritualPressureUpgradeToggle", {
-    Text = "Auto Spiritual Pressure Upgrade",
+Tabs.Upgrades:AddToggle("AutoSpiritualPressureUpgradeToggle", {
+    Title = "Auto Spiritual Pressure Upgrade",
     Default = autoSpiritualPressureUpgradeEnabled,
     Callback = function(Value)
         autoSpiritualPressureUpgradeEnabled = Value
@@ -2517,8 +2505,8 @@ Upgrade2:AddToggle("AutoSpiritualPressureUpgradeToggle", {
     end
 })
 
-Upgrade2:AddToggle("AutoCursedProgressionUpgradeToggle", {
-    Text = "Auto Cursed Progression Upgrade",
+Tabs.Upgrades:AddToggle("AutoCursedProgressionUpgradeToggle", {
+    Title = "Auto Cursed Progression Upgrade",
     Default = autoCursedProgressionUpgradeEnabled,
     Callback = function(Value)
         autoCursedProgressionUpgradeEnabled = Value
@@ -2529,8 +2517,8 @@ Upgrade2:AddToggle("AutoCursedProgressionUpgradeToggle", {
 })
 
 -- Disable Sound
-UnloadGroupbox:AddToggle("MutePetSoundsToggle", {
-    Text = "Mute Pet Sounds",
+Tabs.Settings:AddToggle("MutePetSoundsToggle", {
+    Title = "Mute Pet Sounds",
     Default = mutePetSoundsEnabled,
     Callback = function(Value)
         mutePetSoundsEnabled = Value
@@ -2541,8 +2529,8 @@ UnloadGroupbox:AddToggle("MutePetSoundsToggle", {
 })
 
 -- UI Settings
-UnloadGroupbox:AddToggle("DisableNotificationsToggle", {
-    Text = "Disable Notifications",
+Tabs.Settings:AddToggle("DisableNotificationsToggle", {
+    Title = "Disable Notifications",
     Default = disableNotificationsEnabled,
     Callback = function(Value)
         disableNotificationsEnabled = Value
@@ -2552,8 +2540,8 @@ UnloadGroupbox:AddToggle("DisableNotificationsToggle", {
     end
 })
 
-UnloadGroupbox:AddToggle("FPSBoostToggle", {
-    Text = "FPS Boost (Lower Graphics)",
+Tabs.Settings:AddToggle("FPSBoostToggle", {
+    Title = "FPS Boost (Lower Graphics)",
     Default = fpsBoostEnabled,
     Callback = function(Value)
         fpsBoostEnabled = Value
@@ -2564,8 +2552,8 @@ UnloadGroupbox:AddToggle("FPSBoostToggle", {
 })
 
 
-RedeemGroupbox:AddToggle("AutoRedeemCodesToggle", {
-    Text = "Auto Redeem All Codes",
+Tabs.Settings:AddToggle("AutoRedeemCodesToggle", {
+    Title = "Auto Redeem All Codes",
     Default = autoRedeemCodesEnabled,
     Callback = function(Value)
         autoRedeemCodesEnabled = Value
@@ -2576,7 +2564,9 @@ RedeemGroupbox:AddToggle("AutoRedeemCodesToggle", {
 })
 
 
-UnloadGroupbox:AddButton("Unload Seisen Hub", function()
+Tabs.Settings:AddButton({
+    Title = "Unload Seisen Hub",
+    Callback = function()
     getgenv().SeisenHubRunning = false
     isAuraEnabled = false
     fastKillAuraEnabled = false
@@ -2661,15 +2651,7 @@ UnloadGroupbox:AddButton("Unload Seisen Hub", function()
         end
     end
 
-    if Library and Library.Unload then
-        pcall(function()
-            Library:Unload()
-        end)
-    elseif getgenv().SeisenHubUI and getgenv().SeisenHubUI.Parent then
-        pcall(function()
-            getgenv().SeisenHubUI:Destroy()
-        end)
-    end
+    Window:Destroy()
 
     -- Stop watermark connection
     if WatermarkConnection then
@@ -2705,14 +2687,14 @@ UnloadGroupbox:AddButton("Unload Seisen Hub", function()
     getgenv().SeisenHubLoaded = nil
     getgenv().SeisenHubRunning = nil
     getgenv().SeisenHubConfig = nil
-end)
+end})
 
 task.defer(function()
-    repeat task.wait() until Library.Flags
+    repeat task.wait() until Spiem.Options
     for flag, value in pairs(config) do
-        if Library.Flags[flag] then
+        if Spiem.Options[flag] then
             pcall(function()
-                Library.Flags[flag]:Set(value)
+                Spiem.Options[flag]:Set(value)
             end)
         end
     end
