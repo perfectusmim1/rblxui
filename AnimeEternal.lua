@@ -1,16 +1,16 @@
 -- Cleanup on reload
-if getgenv().SeisenHubLoaded then
-    if getgenv().SeisenHubUI and getgenv().SeisenHubUI.Parent then
+if getgenv().PerfectusHubLoaded then
+    if getgenv().PerfectusHubUI and getgenv().PerfectusHubUI.Parent then
         pcall(function()
-            getgenv().SeisenHubUI:Destroy()
+            getgenv().PerfectusHubUI:Destroy()
         end)
     end
-    getgenv().SeisenHubRunning = false
+    getgenv().PerfectusHubRunning = false
     task.wait(0.25)
 end
 
-getgenv().SeisenHubLoaded = true
-getgenv().SeisenHubRunning = true
+getgenv().PerfectusHubLoaded = true
+getgenv().PerfectusHubRunning = true
 
 -- Services
 local UserInputService = game:GetService("UserInputService")
@@ -23,7 +23,7 @@ local Players = game:GetService("Players")
 -- Load Spiem UI
 local Spiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua"))()
 local Window = Spiem.new({
-    Title = "DYHUB | Anime Eternal",
+    Title = "Perfectus | Anime Eternal",
     MinimizeKey = Enum.KeyCode.K
 })
 
@@ -31,307 +31,33 @@ local Window = Spiem.new({
 local Options = Spiem.Options
 
 -- Store ScreenGui for cleanup
-getgenv().SeisenHubUI = Window.ScreenGui
+getgenv().PerfectusHubUI = Window.ScreenGui
 
 -- Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Main" }),
     Teleport = Window:AddTab({ Title = "Teleport & Dungeon" }),
     Rolls = Window:AddTab({ Title = "Rolls" }),
-    Upgrades = Window:AddTab({ Title = "Upgrades" }),
-    Settings = Window:AddTab({ Title = "UI Settings" })
+    UP = Window:AddTab({ Title = "Upgrades" }),
+    Settings = Window:AddTab({ Title = "Settings" })
 }
 
--- Sections for Main Tab
-Tabs.Main:AddSection("Automation")
-Tabs.Main:AddSection("Auto Stats")
-Tabs.Main:AddSection("Auto Rewards")
+-- Setup SaveManager & InterfaceManager
+local SaveManager = Spiem.SaveManager
+local InterfaceManager = Spiem.InterfaceManager
 
--- Sections for Teleport Tab
-Tabs.Teleport:AddSection("Main Teleport")
-Tabs.Teleport:AddSection("Auto Dungeon")
+SaveManager:SetLibrary(Spiem)
+InterfaceManager:SetLibrary(Spiem)
 
--- Sections for Rolls Tab
-Tabs.Rolls:AddSection("Auto Rolls")
-Tabs.Rolls:AddSection("Auto Roll Tokens")
-Tabs.Rolls:AddSection("Auto Delete Stars")
-Tabs.Rolls:AddSection("Auto Delete Sword")
+SaveManager:SetFolder("Perfectus/AnimeEternal")
+InterfaceManager:SetFolder("Perfectus/AnimeEternal")
 
--- Sections for Upgrades Tab
-Tabs.Upgrades:AddSection("Upgrades")
-Tabs.Upgrades:AddSection("Upgrades 2")
-
--- Sections for Settings Tab
-Tabs.Settings:AddSection("Utilities")
-Tabs.Settings:AddSection("Redeem Codes")
-Tabs.Settings:AddSection("UI Customization")
-Tabs.Settings:AddSection("Script Information")
-
--- Script Information Section (in Settings Tab)
-Tabs.Settings:AddParagraph({ Title = "Script by: DYHUB", Content = "" })
-Tabs.Settings:AddParagraph({ Title = "Version: 2.3.1", Content = "" })
-Tabs.Settings:AddParagraph({ Title = "Game: Anime Eternal", Content = "" })
-
-Tabs.Settings:AddButton({
-    Title = "Join Discord",
-    Callback = function()
-        setclipboard("dsc.gg/dyhub")
-        print("✅ Copied Discord Invite!")
-    end
-})
-
--- Mobile detection and UI adjustments
-if UserInputService.TouchEnabled then
-    Tabs.Settings:AddParagraph({ Title = "📱 Mobile Device Detected", Content = "UI optimized for mobile" })
-else
-    Tabs.Settings:AddParagraph({ Title = "🖥️ Desktop Device Detected", Content = "" })
-end
+SaveManager:IgnoreThemeSettings()
+SaveManager:BuildConfigSection(Tabs.Settings)
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 
 -- Custom Watermark setup (independent of UI scaling)
 local CoreGui = game:GetService("CoreGui")
-
--- Create independent watermark ScreenGui
-local WatermarkGui = Instance.new("ScreenGui")
-WatermarkGui.Name = "SeisenWatermark"
-WatermarkGui.DisplayOrder = 999999
-WatermarkGui.IgnoreGuiInset = true
-WatermarkGui.ResetOnSpawn = false
-WatermarkGui.Parent = CoreGui
-
--- Create watermark frame (main container)
-local WatermarkFrame = Instance.new("Frame")
-WatermarkFrame.Name = "WatermarkFrame"
-WatermarkFrame.Size = UDim2.new(0, 100, 0, 120) -- Taller container for vertical layout
-WatermarkFrame.Position = UDim2.new(0, 10, 0, 100) -- Default position (lower)
-WatermarkFrame.BackgroundTransparency = 1 -- Transparent container
-WatermarkFrame.BorderSizePixel = 0
-WatermarkFrame.Parent = WatermarkGui
-
--- Create perfect circular logo frame
-local CircleFrame = Instance.new("Frame")
-CircleFrame.Name = "CircleFrame"
-CircleFrame.Size = UDim2.new(0, 60, 0, 60) -- Perfect square = perfect circle
-CircleFrame.Position = UDim2.new(0.5, -30, 0, 0) -- Centered horizontally at top
-CircleFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-CircleFrame.BorderSizePixel = 0
-CircleFrame.Parent = WatermarkFrame
-
--- Create circular corner (makes it a perfect circle)
-local WatermarkCorner = Instance.new("UICorner")
-WatermarkCorner.CornerRadius = UDim.new(0.5, 0) -- 50% radius = perfect circle
-WatermarkCorner.Parent = CircleFrame
-
--- Create custom logo/image
-local WatermarkImage = Instance.new("ImageLabel")
-WatermarkImage.Name = "WatermarkImage"
-WatermarkImage.Size = UDim2.new(1, 0, 1, 0) -- Fill the entire circle frame
-WatermarkImage.Position = UDim2.new(0, 0, 0, 0) -- Cover the entire circle
-WatermarkImage.BackgroundTransparency = 1
-WatermarkImage.ImageColor3 = Color3.fromRGB(255, 255, 255) -- White tint
-WatermarkImage.ScaleType = Enum.ScaleType.Crop -- Crop to fill the circle
-WatermarkImage.Parent = CircleFrame
-
--- Make the image circular to match the frame
-local ImageCorner = Instance.new("UICorner")
-ImageCorner.CornerRadius = UDim.new(0.5, 0) -- Same circular radius as the frame
-ImageCorner.Parent = WatermarkImage
-
--- Try multiple image formats for better compatibility
-local imageFormats = {
-    "rbxassetid://104487529937663",
-    "http://www.roblox.com/asset/?id=104487529937663",
-    "rbxasset://textures/ui/GuiImagePlaceholder.png" -- Fallback image
-}
-
--- Function to try loading the image
-local function tryLoadImage()
-    for i, imageId in ipairs(imageFormats) do
-        WatermarkImage.Image = imageId
-        
-        -- Wait a bit to see if image loads
-        task.wait(0.5)
-        
-        -- Check if image loaded (non-zero size means it loaded)
-        if WatermarkImage.AbsoluteSize.X > 0 and WatermarkImage.AbsoluteSize.Y > 0 then
-            print("✅ Watermark image loaded successfully with format:", imageId)
-            break
-        elseif i == #imageFormats then
-            -- If all formats fail, use a text fallback
-            print("⚠️ Could not load custom image, using text fallback")
-            WatermarkImage.Image = ""
-            
-            -- Create text fallback
-            local FallbackText = Instance.new("TextLabel")
-            FallbackText.Size = UDim2.new(1, 0, 1, 0)
-            FallbackText.Position = UDim2.new(0, 0, 0, 0)
-            FallbackText.BackgroundTransparency = 1
-            FallbackText.Text = "D"
-            FallbackText.TextColor3 = Color3.fromRGB(125, 85, 255) -- Accent color
-            FallbackText.TextSize = 24
-            FallbackText.Font = Enum.Font.GothamBold
-            FallbackText.TextXAlignment = Enum.TextXAlignment.Center
-            FallbackText.TextYAlignment = Enum.TextYAlignment.Center
-            FallbackText.Parent = CircleFrame
-        end
-    end
-end
-
--- Try loading the image
-task.spawn(tryLoadImage)
-
--- Create Hub Name text
-local HubNameText = Instance.new("TextLabel")
-HubNameText.Name = "HubNameText"
-HubNameText.Size = UDim2.new(1, 0, 0, 20)
-HubNameText.Position = UDim2.new(0, 0, 0, 65) -- Below the circle
-HubNameText.BackgroundTransparency = 1
-HubNameText.Text = "DYHUB"
-HubNameText.TextColor3 = Color3.fromRGB(255, 255, 255)
-HubNameText.TextSize = 14
-HubNameText.Font = Enum.Font.GothamBold
-HubNameText.TextXAlignment = Enum.TextXAlignment.Center
-HubNameText.TextYAlignment = Enum.TextYAlignment.Center
-HubNameText.TextStrokeTransparency = 0.5
-HubNameText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-HubNameText.Parent = WatermarkFrame
-
--- Create FPS text
-local FPSText = Instance.new("TextLabel")
-FPSText.Name = "FPSText"
-FPSText.Size = UDim2.new(1, 0, 0, 16)
-FPSText.Position = UDim2.new(0, 0, 0, 85) -- Below hub name
-FPSText.BackgroundTransparency = 1
-FPSText.Text = "60 fps"
-FPSText.TextColor3 = Color3.fromRGB(200, 200, 200)
-FPSText.TextSize = 12
-FPSText.Font = Enum.Font.Code
-FPSText.TextXAlignment = Enum.TextXAlignment.Center
-FPSText.TextYAlignment = Enum.TextYAlignment.Center
-FPSText.TextStrokeTransparency = 0.5
-FPSText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-FPSText.Parent = WatermarkFrame
-
--- Create Ping text
-local PingText = Instance.new("TextLabel")
-PingText.Name = "PingText"
-PingText.Size = UDim2.new(1, 0, 0, 16)
-PingText.Position = UDim2.new(0, 0, 0, 101) -- Below FPS
-PingText.BackgroundTransparency = 1
-PingText.Text = "60 ms"
-PingText.TextColor3 = Color3.fromRGB(200, 200, 200)
-PingText.TextSize = 12
-PingText.Font = Enum.Font.Code
-PingText.TextXAlignment = Enum.TextXAlignment.Center
-PingText.TextYAlignment = Enum.TextYAlignment.Center
-PingText.TextStrokeTransparency = 0.5
-PingText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-PingText.Parent = WatermarkFrame
-
--- Draggable state variables
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
--- Mouse/touch input for dragging and UI toggle
-local dragThreshold = 5 -- Pixels moved before considering it a drag
-local clickStartPos = nil
-
--- Global input connections for better drag handling
-local inputBeganConnection = nil
-local inputChangedConnection = nil
-local inputEndedConnection = nil
-
-local function onInputBegan(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false -- Reset dragging state
-        dragStart = input.Position
-        clickStartPos = input.Position
-        startPos = WatermarkFrame.Position
-        
-        -- Visual feedback - slightly fade the circle frame
-        local fadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local fadeTween = TweenService:Create(CircleFrame, fadeInfo, {BackgroundTransparency = 0.3})
-        fadeTween:Play()
-        
-        -- Connect global input events for smooth dragging
-        if inputChangedConnection then inputChangedConnection:Disconnect() end
-        if inputEndedConnection then inputEndedConnection:Disconnect() end
-        
-        inputChangedConnection = UserInputService.InputChanged:Connect(function(globalInput)
-            if globalInput.UserInputType == Enum.UserInputType.MouseMovement or globalInput.UserInputType == Enum.UserInputType.Touch then
-                if dragStart then
-                    local delta = globalInput.Position - dragStart
-                    local distance = math.sqrt(delta.X^2 + delta.Y^2)
-                    
-                    -- Only start dragging if moved beyond threshold
-                    if distance > dragThreshold then
-                        dragging = true
-                        WatermarkFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-                    end
-                end
-            end
-        end)
-        
-        inputEndedConnection = UserInputService.InputEnded:Connect(function(globalInput)
-            if globalInput.UserInputType == Enum.UserInputType.MouseButton1 or globalInput.UserInputType == Enum.UserInputType.Touch then
-                -- Restore original transparency
-                local restoreInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-                local restoreTween = TweenService:Create(CircleFrame, restoreInfo, {BackgroundTransparency = 0})
-                restoreTween:Play()
-                
-                -- If it wasn't a drag, treat it as a click to toggle UI
-                if not dragging and clickStartPos then
-                    local delta = globalInput.Position - clickStartPos
-                    local distance = math.sqrt(delta.X^2 + delta.Y^2)
-                    
-                    if distance <= dragThreshold then
-                        -- Toggle UI visibility
-                        Window:ToggleMinimize()
-                        print("🔄 UI toggled via watermark click")
-                    end
-                end
-                
-                -- Reset states and disconnect global events
-                dragging = false
-                dragStart = nil
-                clickStartPos = nil
-                
-                if inputChangedConnection then inputChangedConnection:Disconnect() end
-                if inputEndedConnection then inputEndedConnection:Disconnect() end
-            end
-        end)
-    end
-end
-
--- Connect only the initial input event to the watermark frame
-WatermarkFrame.InputBegan:Connect(onInputBegan)
-
--- Dynamic watermark with FPS and Ping (completely independent)
-local FrameTimer = tick()
-local FrameCounter = 0
-local FPS = 60
-
-local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(function()
-    FrameCounter = FrameCounter + 1
-
-    if (tick() - FrameTimer) >= 1 then
-        FPS = FrameCounter
-        FrameTimer = tick()
-        FrameCounter = 0
-    end
-
-    -- Update custom watermark text
-    pcall(function()
-        local pingValue = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
-        
-        -- Update individual text elements
-        FPSText.Text = math.floor(FPS) .. " fps"
-        PingText.Text = math.floor(pingValue) .. " ms"
-        
-        -- No need to resize frame - it's now fixed size for vertical layout
-    end)
-end)
-
 
 -- Services & Variables
 local Players = game:GetService("Players")
@@ -352,8 +78,8 @@ local currentTarget = nil
 
 local RunService = game:GetService("RunService")
 
-local configFolder = "DYHUBAE"
-local configFile = configFolder .. "/DYHUBAE.txt"
+local configFolder = "PerfectusAE"
+local configFile = configFolder .. "/PerfectusAE.txt"
 local HttpService = game:GetService("HttpService")
 
 -- Ensure folder exists
@@ -362,7 +88,7 @@ if not isfolder(configFolder) then
 end
 
 -- Initialize variables with explicit defaults
-local config = getgenv().SeisenHubConfig or {}
+local config = getgenv().PerfectusHubConfig or {}
 
 -- Load config if file exists
 if isfile(configFile) then
@@ -562,7 +288,7 @@ end
 -- Task functions
 local function startAutoFarm()
     task.spawn(function()
-        while getgenv().SeisenHubRunning and isAuraEnabled do
+        while getgenv().PerfectusHubRunning and isAuraEnabled do
             local char = localPlayer.Character
             local myHRP = char and char:FindFirstChild("HumanoidRootPart")
 
@@ -618,7 +344,7 @@ local function startFastKillAura()
         pcall(function()
             ToServer:FireServer(unpack(argsActivator))
         end)
-        while fastKillAuraEnabled and getgenv().SeisenHubRunning do
+        while fastKillAuraEnabled and getgenv().PerfectusHubRunning do
             local char = localPlayer.Character
             local myHRP = char and char:FindFirstChild("HumanoidRootPart")
 
@@ -688,7 +414,7 @@ local function startSlowKillAura()
         pcall(function()
             ToServer:FireServer(unpack(argsActivator))
         end)
-        while slowKillAuraEnabled and getgenv().SeisenHubRunning do
+        while slowKillAuraEnabled and getgenv().PerfectusHubRunning do
             local monster = getNearestValidMonster()
             if monster then
                 local hum = monster:FindFirstChild("Humanoid")
@@ -711,7 +437,7 @@ end
 
 local function startAutoRank()
     task.spawn(function()
-        while autoRankEnabled and getgenv().SeisenHubRunning do
+        while autoRankEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Upgrading_Name"] = "Rank",
@@ -729,7 +455,7 @@ end
 
 local function startAutoAvatarLeveling()
     task.spawn(function()
-        while getgenv().SeisenHubRunning and autoAvatarLevelingEnabled do
+        while getgenv().PerfectusHubRunning and autoAvatarLevelingEnabled do
             local args = {
                 [1] = {
                     ["Value"] = true,
@@ -750,7 +476,7 @@ end
 
 local function startAutoQuests()
     task.spawn(function()
-        while autoAcceptAllQuestsEnabled and getgenv().SeisenHubRunning do
+        while autoAcceptAllQuestsEnabled and getgenv().PerfectusHubRunning do
             for questId = 1, 99 do
                 local argsAccept = {
                     [1] = {
@@ -814,7 +540,7 @@ local function startAutoAchievements()
             return romanNumerals[num]
         end
 
-        while autoClaimAchievementsEnabled and getgenv().SeisenHubRunning do
+        while autoClaimAchievementsEnabled and getgenv().PerfectusHubRunning do
             for name, maxLevel in pairs(achievements) do
                 for i = 1, maxLevel do
                     local id = name .. "_" .. toRoman(i)
@@ -847,7 +573,7 @@ local function startAutoRollDragonRace()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while getgenv().SeisenHubRunning and autoRollDragonRaceEnabled do
+        while getgenv().PerfectusHubRunning and autoRollDragonRaceEnabled do
             local args = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -880,7 +606,7 @@ function startAutoRollSaiyanEvolution()
         -- Wait to ensure unlock is processed
         task.wait(2) -- Adjust delay if needed based on server response time
         -- Now keep rolling while enabled
-        while getgenv().SeisenHubRunning and autoRollSaiyanEvolutionEnabled do
+        while getgenv().PerfectusHubRunning and autoRollSaiyanEvolutionEnabled do
             local args = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -898,7 +624,7 @@ end
 
 local function startAutoRollStars()
     task.spawn(function()
-        while getgenv().SeisenHubRunning and autoRollEnabled do
+        while getgenv().PerfectusHubRunning and autoRollEnabled do
             pcall(function()
                 local cacheArgs = {
                     [1] = {
@@ -923,7 +649,7 @@ end
 
 local function startAutoDelete()
     task.spawn(function()
-        while autoDeleteEnabled and getgenv().SeisenHubRunning do
+        while autoDeleteEnabled and getgenv().PerfectusHubRunning do
             pcall(function()
                 local starRarityMap = {
                     ["Star_1"] = {
@@ -1103,7 +829,7 @@ end
 
 local function startAutoTimeReward()
     task.spawn(function()
-        while isAutoTimeRewardEnabled and getgenv().SeisenHubRunning do
+        while isAutoTimeRewardEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Action"] = "_Hourly_Rewards",
@@ -1120,7 +846,7 @@ end
 
 local function startAutoDailyChest()
     task.spawn(function()
-        while isAutoDailyChestEnabled and getgenv().SeisenHubRunning do
+        while isAutoDailyChestEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Action"] = "_Chest_Claim",
@@ -1137,7 +863,7 @@ end
 
 local function startAutoVipChest()
     task.spawn(function()
-        while isAutoVipChestEnabled and getgenv().SeisenHubRunning do
+        while isAutoVipChestEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Action"] = "_Chest_Claim",
@@ -1154,7 +880,7 @@ end
 
 local function startAutoGroupChest()
     task.spawn(function()
-        while isAutoGroupChestEnabled and getgenv().SeisenHubRunning do
+        while isAutoGroupChestEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Action"] = "_Chest_Claim",
@@ -1171,7 +897,7 @@ end
 
 local function startAutoPremiumChest()
     task.spawn(function()
-        while isAutoPremiumChestEnabled and getgenv().SeisenHubRunning do
+        while isAutoPremiumChestEnabled and getgenv().PerfectusHubRunning do
             local args = {
                 [1] = {
                     ["Action"] = "_Chest_Claim",
@@ -1188,7 +914,7 @@ end
 
 local function startAutoEnterDungeon()
     task.spawn(function()
-        while autoEnterDungeon and getgenv().SeisenHubRunning do
+        while autoEnterDungeon and getgenv().PerfectusHubRunning do
             for _, dungeon in ipairs(selectedDungeons) do
                 pcall(function()
                     local args = {
@@ -1208,7 +934,7 @@ end
 
 local function startAutoUpgrade()
     task.spawn(function()
-        while autoUpgradeEnabled and getgenv().SeisenHubRunning do
+        while autoUpgradeEnabled and getgenv().PerfectusHubRunning do
             pcall(function()
                 for upgradeName, isEnabled in pairs(enabledUpgrades) do
                     if isEnabled then
@@ -1240,7 +966,7 @@ local function startAutoRollSwords()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while getgenv().SeisenHubRunning and autoRollSwordsEnabled do
+        while getgenv().PerfectusHubRunning and autoRollSwordsEnabled do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1268,7 +994,7 @@ local function startAutoRollPirateCrew()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while getgenv().SeisenHubRunning and autoRollPirateCrewEnabled do
+        while getgenv().PerfectusHubRunning and autoRollPirateCrewEnabled do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1296,7 +1022,7 @@ function startAutoHakiUpgrade()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while autoHakiUpgradeEnabled and getgenv().SeisenHubRunning do
+        while autoHakiUpgradeEnabled and getgenv().PerfectusHubRunning do
             local upgradeArgs = {
                 [1] = {
                     ["Upgrading_Name"] = "Haki_Upgrade",
@@ -1324,7 +1050,7 @@ function startAutoRollDemonFruits()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while autoRollDemonFruitsEnabled and getgenv().SeisenHubRunning do
+        while autoRollDemonFruitsEnabled and getgenv().PerfectusHubRunning do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1352,7 +1078,7 @@ function startAutoAttackRangeUpgrade()
         pcall(function()
             ToServer:FireServer(unpack(unlockArgs))
         end)
-        while autoAttackRangeUpgradeEnabled and getgenv().SeisenHubRunning do
+        while autoAttackRangeUpgradeEnabled and getgenv().PerfectusHubRunning do
             local upgradeArgs = {
                 [1] = {
                     ["Upgrading_Name"] = "Attack_Range",
@@ -1466,7 +1192,7 @@ function startAutoSpiritualPressureUpgrade()
         end)
         -- Wait to ensure unlock is processed
         task.wait(2) -- Adjust delay if needed based on server response time
-        while autoSpiritualPressureUpgradeEnabled and getgenv().SeisenHubRunning do
+        while autoSpiritualPressureUpgradeEnabled and getgenv().PerfectusHubRunning do
             local upgradeArgs = {
                 [1] = {
                     ["Upgrading_Name"] = "Spiritual_Pressure",
@@ -1496,7 +1222,7 @@ function startAutoRollReiatsuColor()
             ToServer:FireServer(unpack(unlockArgs))
         end)
         -- Now keep rolling while enabled
-        while autoRollReiatsuColorEnabled and getgenv().SeisenHubRunning do
+        while autoRollReiatsuColorEnabled and getgenv().PerfectusHubRunning do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1526,7 +1252,7 @@ local function startAutoRollZanpakuto()
             ToServer:FireServer(unpack(unlockArgs))
         end)
         -- Now keep rolling while enabled
-        while autoRollZanpakutoEnabled and getgenv().SeisenHubRunning do
+        while autoRollZanpakutoEnabled and getgenv().PerfectusHubRunning do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1556,7 +1282,7 @@ function startAutoCursedProgressionUpgrade()
             ToServer:FireServer(unpack(unlockArgs))
         end)
         -- Now keep upgrading while enabled
-        while autoCursedProgressionUpgradeEnabled and getgenv().SeisenHubRunning do
+        while autoCursedProgressionUpgradeEnabled and getgenv().PerfectusHubRunning do
             local upgradeArgs = {
                 [1] = {
                     ["Upgrading_Name"] = "Curse",
@@ -1586,7 +1312,7 @@ local function startAutoRollCurses()
             ToServer:FireServer(unpack(unlockArgs))
         end)
         -- Now keep rolling while enabled
-        while autoRollCursesEnabled and getgenv().SeisenHubRunning do
+        while autoRollCursesEnabled and getgenv().PerfectusHubRunning do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1615,7 +1341,7 @@ function startAutoObelisk()
             "Warrior_Obelisk",
             "Archer_Obelisk",
         }
-        while autoObeliskEnabled and getgenv().SeisenHubRunning do
+        while autoObeliskEnabled and getgenv().PerfectusHubRunning do
             for _, obeliskType in ipairs(obeliskTypes) do
                 pcall(function()
                     ToServer:FireServer({
@@ -1776,7 +1502,7 @@ local function startAutoRollDemonArts()
             ToServer:FireServer(unpack(unlockArgs))
         end)
         -- Now keep rolling while enabled
-        while autoRollDemonArtsEnabled and getgenv().SeisenHubRunning do
+        while autoRollDemonArtsEnabled and getgenv().PerfectusHubRunning do
             local rollArgs = {
                 [1] = {
                     ["Open_Amount"] = 1,
@@ -1822,7 +1548,7 @@ end
 
 function startAutoDeleteGacha()
     task.spawn(function()
-        while config.AutoDeleteGachaUnitsToggle and getgenv().SeisenHubRunning do
+        while config.AutoDeleteGachaUnitsToggle and getgenv().PerfectusHubRunning do
             for rarity, enabled in pairs(selectedGachaRarities) do
                 if enabled then
                     local args = {
@@ -1883,6 +1609,7 @@ if config.AutoDeleteGachaUnitsToggle then startAutoDeleteGacha() end
 
 
 -- Auto Farm Toggle
+Tabs.Main:AddSection("Automation")
 Tabs.Main:AddToggle("AutoFarmToggle", {
     Title = "Fast Auto Farm",
     Default = isAuraEnabled,
@@ -1999,6 +1726,7 @@ Tabs.Main:AddToggle("AutoObeliskToggle", {
 
 
 -- Auto Roll Dragon Race Toggle
+Tabs.Rolls:AddSection("Auto Roll Tokens")
 Tabs.Rolls:AddToggle("AutoRollDragonRaceToggle", {
     Title = "Auto Roll Dragon Race",
     Default = autoRollDragonRaceEnabled,
@@ -2023,6 +1751,7 @@ Tabs.Rolls:AddToggle("AutoRollSaiyanEvolutionToggle", {
 })
 
 -- Auto Roll Stars Toggle
+Tabs.Rolls:AddSection("Auto Rolls")
 Tabs.Rolls:AddToggle("AutoRollStarsToggle", {
     Title = "Auto Roll Stars",
     Default = autoRollEnabled,
@@ -2163,6 +1892,7 @@ Tabs.Rolls:AddToggle("AutoRollDemonArtsToggle", {
 Tabs.Rolls:AddParagraph({ Title = "Auto Delete Settings", Content = "" })
 
 -- Auto Delete Toggle
+Tabs.Rolls:AddSection("Auto Delete Units")
 Tabs.Rolls:AddToggle("AutoDeleteUnitsToggle", {
     Title = "Auto Delete Units",
     Default = autoDeleteEnabled,
@@ -2222,6 +1952,7 @@ Tabs.Rolls:AddDropdown("AutoDeleteRaritiesDropdown", {
     end
 })
 
+Tabs.Rolls:AddSection("Auto Delete Gacha")
 Tabs.Rolls:AddToggle("AutoDeleteGachaUnitsToggle", {
     Title = "Auto Delete Gacha Units",
     Default = config.AutoDeleteGachaUnitsToggle or false,
@@ -2253,9 +1984,7 @@ Tabs.Rolls:AddDropdown("AutoDeleteGachaRaritiesDropdown", {
 })
 
 -- Auto Stats
-
-
-
+Tabs.Main:AddSection("Auto Stats")
 Tabs.Main:AddDropdown("AutoStatSingleDropdown", {
     Values = stats,
     Default = selectedStat, -- display name
@@ -2293,6 +2022,7 @@ Tabs.Main:AddSlider("PointsPerSecondSlider", {
 })
 
 -- Auto Collect Rewards
+Tabs.Main:AddSection("Auto Rewards")
 Tabs.Main:AddToggle("AutoClaimTimeRewardToggle", {
     Title = "Auto Claim Time Reward",
     Default = isAutoTimeRewardEnabled,
@@ -2349,6 +2079,7 @@ Tabs.Main:AddToggle("AutoClaimPremiumChestToggle", {
 })
 
 -- Teleport
+Tabs.Teleport:AddSection("Teleports")
 local teleportLocations = {
     ["Dungeon Lobby 1"] = "Dungeon_Lobby_1",
     ["Earth City"] = "Earth_City",
@@ -2389,6 +2120,7 @@ Tabs.Teleport:AddDropdown("MainTeleportDropdown", {
     end
 })
 
+Tabs.Teleport:AddSection("Auto Dungeon")
 -- Dungeon Toggles
 local dungeonList = {
     "Dungeon_Easy",
@@ -2447,7 +2179,8 @@ for _, upgradeName in ipairs(upgradeOptions) do
     enabledUpgrades[upgradeName] = config[upgradeName .. "_Toggle"] or false
 end
 
-Tabs.Upgrades:AddToggle("AutoUpgradeToggle", {
+Tabs.UP:AddSection("Upgrades")
+Tabs.UP:AddToggle("AutoUpgradeToggle", {
     Title = "Auto Upgrade",
     Default = autoUpgradeEnabled,
     Callback = function(Value)
@@ -2458,9 +2191,9 @@ Tabs.Upgrades:AddToggle("AutoUpgradeToggle", {
     end
 })
 
-Tabs.Upgrades:AddParagraph({ Title = "Upgrade List", Content = "" })
+Tabs.UP:AddParagraph({ Title = "Upgrade List", Content = "" })
 for _, upgradeName in ipairs(upgradeOptions) do
-    Tabs.Upgrades:AddToggle(upgradeName .. "_Toggle", {
+    Tabs.UP:AddToggle(upgradeName .. "_Toggle", {
         Title = upgradeName:gsub("_", " "),
         Default = enabledUpgrades[upgradeName],
         Callback = function(Value)
@@ -2472,7 +2205,8 @@ for _, upgradeName in ipairs(upgradeOptions) do
 end
 
 -- Auto Upgrade Haki
-Tabs.Upgrades:AddToggle("AutoHakiUpgradeToggle", {
+Tabs.UP:AddSection("Upgrades 2")
+Tabs.UP:AddToggle("AutoHakiUpgradeToggle", {
     Title = "Auto Haki Upgrade",
     Default = autoHakiUpgradeEnabled,
     Callback = function(Value)
@@ -2483,7 +2217,7 @@ Tabs.Upgrades:AddToggle("AutoHakiUpgradeToggle", {
     end
 })
 
-Tabs.Upgrades:AddToggle("AutoAttackRangeUpgradeToggle", {
+Tabs.UP:AddToggle("AutoAttackRangeUpgradeToggle", {
     Title = "Auto Attack Range Upgrade",
     Default = autoAttackRangeUpgradeEnabled,
     Callback = function(Value)
@@ -2494,7 +2228,7 @@ Tabs.Upgrades:AddToggle("AutoAttackRangeUpgradeToggle", {
     end
 })
 
-Tabs.Upgrades:AddToggle("AutoSpiritualPressureUpgradeToggle", {
+Tabs.UP:AddToggle("AutoSpiritualPressureUpgradeToggle", {
     Title = "Auto Spiritual Pressure Upgrade",
     Default = autoSpiritualPressureUpgradeEnabled,
     Callback = function(Value)
@@ -2505,7 +2239,7 @@ Tabs.Upgrades:AddToggle("AutoSpiritualPressureUpgradeToggle", {
     end
 })
 
-Tabs.Upgrades:AddToggle("AutoCursedProgressionUpgradeToggle", {
+Tabs.UP:AddToggle("AutoCursedProgressionUpgradeToggle", {
     Title = "Auto Cursed Progression Upgrade",
     Default = autoCursedProgressionUpgradeEnabled,
     Callback = function(Value)
@@ -2516,7 +2250,8 @@ Tabs.Upgrades:AddToggle("AutoCursedProgressionUpgradeToggle", {
     end
 })
 
--- Disable Sound
+-- Utilities Section
+Tabs.Settings:AddSection("Utilities")
 Tabs.Settings:AddToggle("MutePetSoundsToggle", {
     Title = "Mute Pet Sounds",
     Default = mutePetSoundsEnabled,
@@ -2552,6 +2287,7 @@ Tabs.Settings:AddToggle("FPSBoostToggle", {
 })
 
 
+Tabs.Settings:AddSection("Redeem Codes")
 Tabs.Settings:AddToggle("AutoRedeemCodesToggle", {
     Title = "Auto Redeem All Codes",
     Default = autoRedeemCodesEnabled,
@@ -2563,11 +2299,32 @@ Tabs.Settings:AddToggle("AutoRedeemCodesToggle", {
     end
 })
 
+Tabs.Settings:AddSection("Information")
+Tabs.Settings:AddParagraph({ Title = "Script by: Perfectus", Content = "" })
+Tabs.Settings:AddParagraph({ Title = "Version: 2.3.1", Content = "" })
+Tabs.Settings:AddParagraph({ Title = "Game: Anime Eternal", Content = "" })
 
 Tabs.Settings:AddButton({
-    Title = "Unload Seisen Hub",
+    Title = "Join Discord",
     Callback = function()
-    getgenv().SeisenHubRunning = false
+        setclipboard("dsc.gg/perfectus")
+        print("✅ Copied Discord Invite!")
+    end
+})
+
+-- Mobile detection and UI adjustments
+if UserInputService.TouchEnabled then
+    Tabs.Settings:AddParagraph({ Title = "📱 Mobile Device Detected", Content = "UI optimized for mobile" })
+else
+    Tabs.Settings:AddParagraph({ Title = "🖥️ Desktop Device Detected", Content = "" })
+end
+
+
+Tabs.Settings:AddSection("Script Management")
+Tabs.Settings:AddButton({
+    Title = "Unload Perfectus Hub",
+    Callback = function()
+    getgenv().PerfectusHubRunning = false
     isAuraEnabled = false
     fastKillAuraEnabled = false
     slowKillAuraEnabled = false
@@ -2653,29 +2410,13 @@ Tabs.Settings:AddButton({
 
     Window:Destroy()
 
-    -- Stop watermark connection
-    if WatermarkConnection then
-        WatermarkConnection:Disconnect()
-    end
-    
     -- Disconnect any remaining global input connections
-    if inputChangedConnection then
-        inputChangedConnection:Disconnect()
-    end
-    if inputEndedConnection then
-        inputEndedConnection:Disconnect()
-    end
-    
-    -- Remove custom watermark
-    if WatermarkGui then
-        WatermarkGui:Destroy()
-    end
 
-    if getgenv().SeisenHubConnections then
-        for _, conn in ipairs(getgenv().SeisenHubConnections) do
+    if getgenv().PerfectusHubConnections then
+        for _, conn in ipairs(getgenv().PerfectusHubConnections) do
             pcall(function() conn:Disconnect() end)
         end
-        getgenv().SeisenHubConnections = nil
+        getgenv().PerfectusHubConnections = nil
     end
 
     -- Disable FPS boost and restore original settings
@@ -2683,10 +2424,10 @@ Tabs.Settings:AddButton({
         disableFPSBoost()
     end
 
-    getgenv().SeisenHubUI = nil
-    getgenv().SeisenHubLoaded = nil
-    getgenv().SeisenHubRunning = nil
-    getgenv().SeisenHubConfig = nil
+    getgenv().PerfectusHubUI = nil
+    getgenv().PerfectusHubLoaded = nil
+    getgenv().PerfectusHubRunning = nil
+    getgenv().PerfectusHubConfig = nil
 end})
 
 task.defer(function()
@@ -2741,4 +2482,12 @@ task.defer(function()
             end
         end
     end
+    -- Load autoload config
+    SaveManager:LoadAutoloadConfig()
+    
+    Spiem:Notify({
+        Title = "Perfectus Loaded!",
+        Content = "Script is ready. Press K to hide/show.",
+        Duration = 5
+    })
 end)

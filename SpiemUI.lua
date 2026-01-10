@@ -4,8 +4,77 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
 local Spiem = {
-    Version = "1.6",
-    Options = {}
+    Version = "1.7", -- Incremented version
+    Options = {},
+    Themes = {
+        ["Midnight Blue (Default)"] = {
+            MainFrame = Color3.fromRGB(20, 22, 28),
+            Sidebar = Color3.fromRGB(15, 16, 22),
+            Accent = Color3.fromRGB(0, 120, 255),
+            TopbarText = Color3.fromRGB(240, 240, 240),
+            TabText = Color3.fromRGB(160, 160, 160),
+            TabSelectedText = Color3.fromRGB(255, 255, 255),
+            SectionText = Color3.fromRGB(0, 150, 255),
+            ItemBg = Color3.fromRGB(28, 30, 38),
+            ItemText = Color3.fromRGB(230, 230, 230),
+            ItemStroke = Color3.fromRGB(60, 60, 60),
+            Indicator = Color3.fromRGB(0, 120, 255)
+        },
+        ["Spiem Premium"] = {
+            MainFrame = Color3.fromRGB(18, 15, 20),
+            Sidebar = Color3.fromRGB(12, 10, 14),
+            Accent = Color3.fromRGB(180, 50, 255),
+            TopbarText = Color3.fromRGB(255, 255, 255),
+            TabText = Color3.fromRGB(180, 160, 200),
+            TabSelectedText = Color3.fromRGB(240, 200, 255),
+            SectionText = Color3.fromRGB(200, 100, 255),
+            ItemBg = Color3.fromRGB(32, 25, 36),
+            ItemText = Color3.fromRGB(245, 240, 250),
+            ItemStroke = Color3.fromRGB(100, 50, 150),
+            Indicator = Color3.fromRGB(180, 50, 255)
+        },
+        ["Emerald Stealth"] = {
+            MainFrame = Color3.fromRGB(15, 20, 18),
+            Sidebar = Color3.fromRGB(10, 14, 12),
+            Accent = Color3.fromRGB(0, 255, 120),
+            TopbarText = Color3.fromRGB(235, 245, 240),
+            TabText = Color3.fromRGB(150, 170, 160),
+            TabSelectedText = Color3.fromRGB(200, 255, 220),
+            SectionText = Color3.fromRGB(0, 255, 120),
+            ItemBg = Color3.fromRGB(25, 32, 30),
+            ItemText = Color3.fromRGB(230, 240, 235),
+            ItemStroke = Color3.fromRGB(40, 80, 60),
+            Indicator = Color3.fromRGB(0, 255, 120)
+        },
+        ["Deep Sea"] = {
+            MainFrame = Color3.fromRGB(10, 15, 25),
+            Sidebar = Color3.fromRGB(8, 12, 18),
+            Accent = Color3.fromRGB(0, 200, 255),
+            TopbarText = Color3.fromRGB(255, 255, 255),
+            TabText = Color3.fromRGB(140, 160, 180),
+            TabSelectedText = Color3.fromRGB(0, 200, 255),
+            SectionText = Color3.fromRGB(0, 200, 255),
+            ItemBg = Color3.fromRGB(20, 28, 40),
+            ItemText = Color3.fromRGB(220, 240, 255),
+            ItemStroke = Color3.fromRGB(30, 60, 90),
+            Indicator = Color3.fromRGB(0, 200, 255)
+        },
+        ["Dark Gold"] = {
+            MainFrame = Color3.fromRGB(20, 18, 15),
+            Sidebar = Color3.fromRGB(15, 13, 10),
+            Accent = Color3.fromRGB(255, 180, 50),
+            TopbarText = Color3.fromRGB(250, 240, 230),
+            TabText = Color3.fromRGB(170, 160, 150),
+            TabSelectedText = Color3.fromRGB(255, 200, 100),
+            SectionText = Color3.fromRGB(255, 180, 50),
+            ItemBg = Color3.fromRGB(34, 30, 25),
+            ItemText = Color3.fromRGB(240, 230, 220),
+            ItemStroke = Color3.fromRGB(80, 60, 40),
+            Indicator = Color3.fromRGB(255, 180, 50)
+        }
+    },
+    CurrentTheme = "Midnight Blue (Default)",
+    Acrylic = false
 }
 Spiem.__index = Spiem
 
@@ -59,14 +128,18 @@ function Spiem:Notify(options)
     local duration = options.Duration or 5
     if not Spiem.NotifGui or not Spiem.NotifGui.Parent then return end
 
+    local theme = Spiem.Themes[Spiem.CurrentTheme]
     local frame = Instance.new("Frame", NotifContainer)
-    frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    frame.BackgroundColor3 = theme.MainFrame
     frame.Size = UDim2.new(1, 0, 0, 0)
     frame.Position = UDim2.new(0, 0, 0, 0)
     frame.ClipsDescendants = true
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    if Spiem.Acrylic then
+        frame.BackgroundTransparency = 0.4
+    end
     local s = Instance.new("UIStroke", frame)
-    s.Color, s.Transparency = Color3.fromRGB(70, 70, 70), 0.5
+    s.Color, s.Transparency = theme.ItemStroke, 0.5
 
     -- Notification icon on the right
     local icon = Instance.new("ImageLabel", frame)
@@ -115,8 +188,10 @@ function Spiem.new(options)
 
     local title = type(options) == "table" and options.Title or options or "Spiem UI"
 
+    self.Theme = Spiem.Themes[Spiem.CurrentTheme] or Spiem.Themes["Midnight Blue (Default)"]
+
     self.MainFrame = Instance.new("Frame")
-    self.MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    self.MainFrame.BackgroundColor3 = self.Theme.MainFrame
     self.MainFrame.Position = UDim2.new(0.5, -290, 0.5, -230)
     self.MainFrame.Size = UDim2.new(0, 580, 0, 460)
     self.MainFrame.ClipsDescendants = true
@@ -124,22 +199,22 @@ function Spiem.new(options)
 
     Instance.new("UICorner", self.MainFrame).CornerRadius = UDim.new(0, 10)
     local MS = Instance.new("UIStroke", self.MainFrame)
-    MS.Color, MS.Thickness = Color3.fromRGB(60, 60, 60), 1
+    MS.Color, MS.Thickness = self.Theme.ItemStroke, 1
 
     self.Topbar = Instance.new("Frame", self.MainFrame)
     self.Topbar.Name, self.Topbar.BackgroundTransparency, self.Topbar.Size = "Topbar", 1, UDim2.new(1, 0, 0, 50)
 
     local TL = Instance.new("TextLabel", self.Topbar)
     TL.BackgroundTransparency, TL.Position, TL.Size, TL.Font = 1, UDim2.new(0, 20, 0, 0), UDim2.new(1, -120, 1, 0), Enum.Font.BuilderSansBold
-    TL.Text, TL.TextColor3, TL.TextSize, TL.TextXAlignment = title, Color3.fromRGB(240, 240, 240), 18, Enum.TextXAlignment.Left
+    TL.Text, TL.TextColor3, TL.TextSize, TL.TextXAlignment = title, self.Theme.TopbarText, 18, Enum.TextXAlignment.Left
 
     MakeDraggable(self.Topbar, self.MainFrame)
 
     self.Sidebar = Instance.new("Frame", self.MainFrame)
-    self.Sidebar.BackgroundColor3, self.Sidebar.Position, self.Sidebar.Size = Color3.fromRGB(24, 24, 24), UDim2.new(0, 15, 0, 60), UDim2.new(0, 160, 1, -75)
+    self.Sidebar.BackgroundColor3, self.Sidebar.Position, self.Sidebar.Size = self.Theme.Sidebar, UDim2.new(0, 15, 0, 60), UDim2.new(0, 160, 1, -75)
     Instance.new("UICorner", self.Sidebar).CornerRadius = UDim.new(0, 8)
     local SS = Instance.new("UIStroke", self.Sidebar)
-    SS.Color, SS.Transparency = Color3.fromRGB(50, 50, 50), 0.5
+    SS.Color, SS.Transparency = self.Theme.ItemStroke, 0.5
 
     self.TabList = Instance.new("ScrollingFrame", self.Sidebar)
     self.TabList.BackgroundTransparency, self.TabList.Position, self.TabList.Size = 1, UDim2.new(0, 5, 0, 5), UDim2.new(1, -10, 1, -10)
@@ -206,6 +281,7 @@ end
 
 function Spiem:Destroy()
     if self.ToggleConnection then self.ToggleConnection:Disconnect() end
+    if self.BlurEffect then self.BlurEffect:Destroy() end
     
     -- Geliştirilmiş Kapatma Animasyonu (Minimize stiliyle uyumlu ama daha vurgulu)
     local closeTween = Tween(self.MainFrame, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
@@ -218,6 +294,67 @@ function Spiem:Destroy()
     
     self.ScreenGui:Destroy()
     if Spiem.NotifGui then Spiem.NotifGui:Destroy() end
+end
+
+-- Theme & Visual Management
+function Spiem:UpdateTheme()
+    local theme = Spiem.Themes[Spiem.CurrentTheme]
+    if not theme then return end
+    self.Theme = theme
+
+    local function applyTheme(obj)
+        if obj == self.MainFrame then
+            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.MainFrame, BackgroundTransparency = Spiem.Acrylic and 0.35 or 0})
+            local s = obj:FindFirstChildOfClass("UIStroke")
+            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke}) end
+        elseif obj == self.Sidebar then
+            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.Sidebar, BackgroundTransparency = Spiem.Acrylic and 0.45 or 0})
+            local s = obj:FindFirstChildOfClass("UIStroke")
+            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke}) end
+        elseif obj:IsA("TextLabel") then
+            if obj.Parent == self.Topbar then
+                Tween(obj, {0.3, Enum.EasingStyle.Quint}, {TextColor3 = theme.TopbarText})
+            elseif obj.Name == "PageTitle" then
+                Tween(obj, {0.3, Enum.EasingStyle.Quint}, {TextColor3 = theme.TabSelectedText})
+            elseif obj.ClassName == "TextLabel" and obj.Parent:IsA("Frame") and (obj.Parent.Parent:IsA("ScrollingFrame") or obj.Parent.Parent:IsA("CanvasGroup")) then
+                -- Section or Item text
+                if obj.Font == Enum.Font.BuilderSansBold then
+                    Tween(obj, {0.3, Enum.EasingStyle.Quint}, {TextColor3 = theme.SectionText})
+                else
+                    Tween(obj, {0.3, Enum.EasingStyle.Quint}, {TextColor3 = theme.ItemText})
+                end
+            end
+        elseif obj:IsA("Frame") and (obj.Parent:IsA("ScrollingFrame") or obj.Parent:IsA("CanvasGroup")) then
+            -- This is likely an item frame (Button, Toggle, etc)
+            if obj.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) and obj.Name ~= "Indicator" then 
+                Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.ItemBg, BackgroundTransparency = Spiem.Acrylic and 0.4 or 0})
+                local s = obj:FindFirstChildOfClass("UIStroke")
+                if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke}) end
+            elseif obj.Name == "Indicator" then
+                Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.Indicator})
+            end
+        end
+        
+        for _, child in pairs(obj:GetChildren()) do
+            applyTheme(child)
+        end
+    end
+
+    applyTheme(self.MainFrame)
+    
+    -- Update Blur
+    if Spiem.Acrylic then
+        if not self.BlurEffect then
+            self.BlurEffect = Instance.new("BlurEffect")
+            self.BlurEffect.Size = 15
+            self.BlurEffect.Parent = Lighting
+        end
+    else
+        if self.BlurEffect then
+            self.BlurEffect:Destroy()
+            self.BlurEffect = nil
+        end
+    end
 end
 
 -- Dialog
@@ -1278,6 +1415,34 @@ end
 function InterfaceManager:BuildInterfaceSection(tab)
     assert(self.Library, "InterfaceManager.Library must be set!")
     self:LoadSettings()
+
+    tab:AddSection("Theme & Visuals")
+
+    local themeNames = {}
+    for name, _ in pairs(Spiem.Themes) do table.insert(themeNames, name) end
+    
+    local themeSelection = tab:AddDropdown("InterfaceTheme", {
+        Title = "App Theme",
+        Values = themeNames,
+        Default = Spiem.CurrentTheme,
+        Callback = function(val)
+            Spiem.CurrentTheme = val
+            self.Library:UpdateTheme()
+            self.Settings.Theme = val
+            self:SaveSettings()
+        end
+    })
+
+    tab:AddToggle("AcrylicToggle", {
+        Title = "Glassmorphism & Acrylic",
+        Default = Spiem.Acrylic,
+        Callback = function(val)
+            Spiem.Acrylic = val
+            self.Library:UpdateTheme()
+            self.Settings.Acrylic = val
+            self:SaveSettings()
+        end
+    })
 
     tab:AddSection("Interface")
 
