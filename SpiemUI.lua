@@ -227,6 +227,7 @@ function Spiem.new(options)
     self.PageContainer.ClipsDescendants = true
     self.Tabs = {}
     self.CurrentTab = nil
+    self.Options = Spiem.Options -- Make options accessible from instance
 
     self.MinimizeKey = (type(options) == "table" and options.MinimizeKey) or Enum.KeyCode.LeftControl
 
@@ -298,11 +299,14 @@ end
 
 -- Theme & Visual Management
 function Spiem:UpdateTheme()
+    if self == Spiem or not self.MainFrame then return end
     local theme = Spiem.Themes[Spiem.CurrentTheme]
     if not theme then return end
     self.Theme = theme
 
     local function applyTheme(obj)
+        if not obj or not obj:IsDescendantOf(game) then return end
+        
         if obj == self.MainFrame then
             Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.MainFrame, BackgroundTransparency = Spiem.Acrylic and 0.35 or 0})
             local s = obj:FindFirstChildOfClass("UIStroke")

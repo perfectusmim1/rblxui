@@ -18,7 +18,7 @@ local Camera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
 -- Load Library
-local Spiem = loadstring(readfile("SpiemUI.lua"))() or loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua?v=" .. tick()))()
+local Spiem = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/rblxui/refs/heads/main/SpiemUI.lua?v=" .. tick()))()
 local Options = Spiem.Options
 
 -- Create Window
@@ -629,6 +629,29 @@ do
             end
         end
     })
+
+    MiscTab:AddButton({
+        Title = "Copy Console Logs (F9)",
+        Description = "Copies all current developer console logs to clipboard.",
+        Callback = function()
+            local LogService = game:GetService("LogService")
+            local logs = LogService:GetLogHistory()
+            local logText = ""
+            
+            for _, log in pairs(logs) do
+                local message = log.message or "No message"
+                local msgType = log.messageType and log.messageType.Name or "Unknown"
+                logText = logText .. string.format("[%s] %s\n", msgType, message)
+            end
+            
+            if setclipboard then
+                setclipboard(logText)
+                Spiem:Notify({Title = "Success", Content = "Console logs copied to clipboard!", Duration = 3})
+            else
+                Spiem:Notify({Title = "Error", Content = "Your executor does not support setclipboard.", Duration = 3})
+            end
+        end
+    })
 end
 
 -- ============================================
@@ -639,8 +662,8 @@ do
     local SaveManager = Spiem.SaveManager
     local InterfaceManager = Spiem.InterfaceManager
 
-    SaveManager:SetLibrary(Spiem)
-    InterfaceManager:SetLibrary(Spiem)
+    SaveManager:SetLibrary(Window)
+    InterfaceManager:SetLibrary(Window)
     
     SaveManager:SetFolder("SpiemUniversal")
     InterfaceManager:SetFolder("SpiemUniversal")
