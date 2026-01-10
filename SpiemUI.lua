@@ -258,14 +258,27 @@ function Spiem.new(options)
     local minimized = false
     local function ToggleMinimize()
         minimized = not minimized
+        local theme = self.Theme or Spiem.Themes[Spiem.CurrentTheme]
+        
         if minimized then
-            -- Geliştirilmiş Kapanma Animasyonu (Hızlı ve Esnek)
+            -- Smooth close with transparency fade
             Tween(self.MainFrame, {0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 580, 0, 0), BackgroundTransparency = 1})
+            if self.BlurEffect then
+                Tween(self.BlurEffect, {0.25, Enum.EasingStyle.Quint}, {Size = 0})
+            end
             task.delay(0.25, function() if minimized then self.MainFrame.Visible = false end end)
         else
-            -- Geliştirilmiş Açılma Animasyonu (Daha belirgin sıçrama efekti)
             self.MainFrame.Visible = true
-            Tween(self.MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 580, 0, 460), BackgroundTransparency = 0})
+            -- Determine target transparency based on Acrylic setting
+            local targetTrans = Spiem.Acrylic and 0.3 or 0
+            
+            -- Smooth open with correct transparency
+            Tween(self.MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 580, 0, 460), BackgroundTransparency = targetTrans})
+            
+            if self.BlurEffect then
+                self.BlurEffect.Enabled = true
+                Tween(self.BlurEffect, {0.35, Enum.EasingStyle.Quint}, {Size = 24}) -- Slightly higher blur for better look
+            end
         end
     end
 
@@ -308,13 +321,13 @@ function Spiem:UpdateTheme()
         if not obj or not obj:IsDescendantOf(game) then return end
         
         if obj == self.MainFrame then
-            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.MainFrame, BackgroundTransparency = Spiem.Acrylic and 0.35 or 0})
+            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.MainFrame, BackgroundTransparency = Spiem.Acrylic and 0.3 or 0})
             local s = obj:FindFirstChildOfClass("UIStroke")
-            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke}) end
+            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke, Transparency = Spiem.Acrylic and 0.2 or 0}) end
         elseif obj == self.Sidebar then
-            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.Sidebar, BackgroundTransparency = Spiem.Acrylic and 0.45 or 0})
+            Tween(obj, {0.3, Enum.EasingStyle.Quint}, {BackgroundColor3 = theme.Sidebar, BackgroundTransparency = Spiem.Acrylic and 0.5 or 0})
             local s = obj:FindFirstChildOfClass("UIStroke")
-            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke}) end
+            if s then Tween(s, {0.3, Enum.EasingStyle.Quint}, {Color = theme.ItemStroke, Transparency = Spiem.Acrylic and 0.4 or 0.5}) end
         elseif obj:IsA("TextLabel") then
             if obj.Parent == self.Topbar then
                 Tween(obj, {0.3, Enum.EasingStyle.Quint}, {TextColor3 = theme.TopbarText})
@@ -350,13 +363,18 @@ function Spiem:UpdateTheme()
     if Spiem.Acrylic then
         if not self.BlurEffect then
             self.BlurEffect = Instance.new("BlurEffect")
-            self.BlurEffect.Size = 15
+            self.BlurEffect.Name = "SpiemBlur"
+            self.BlurEffect.Size = 0
             self.BlurEffect.Parent = Lighting
         end
+        self.BlurEffect.Enabled = true
+        Tween(self.BlurEffect, {0.4, Enum.EasingStyle.Quint}, {Size = 24})
     else
         if self.BlurEffect then
-            self.BlurEffect:Destroy()
-            self.BlurEffect = nil
+            local b = self.BlurEffect
+            Tween(b, {0.3, Enum.EasingStyle.Quint}, {Size = 0}).Completed:Connect(function()
+                if not Spiem.Acrylic then b.Enabled = false end -- Extra check since it's async
+            end)
         end
     end
 end
